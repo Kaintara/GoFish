@@ -1,22 +1,22 @@
-from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.utils import get_color_from_hex
+from kivymd.app import MDApp
+from kivymd.uix.screen import MDScreen
+from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.screenmanager import MDScreenManager
 
-class SM(ScreenManager):
+class MainMenu(MDScreen):
     pass
 
-class MainMenu(Screen):
+class InGame(MDScreen):
     pass
 
-class InGame(Screen):
+class Settings(MDScreen):
     pass
 
-class Settings(Screen):
-    pass
-
-class GoFish(App):
+class GoFish(MDApp):
     def build(self):
-        sm = SM()
+        self.theme_cls.primary_palette = "Teal"
+        sm = MDScreenManager()
         sm.add_widget(MainMenu(name="Menu"))
         sm.add_widget(InGame(name="InGame"))
         sm.add_widget(Settings(name="Settings"))

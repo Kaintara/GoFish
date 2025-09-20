@@ -6,12 +6,34 @@
         Rectangle:
             pos: self.pos
             size: self.size
-    BoxLayout:
-        Button:
-            pos: self.pos
-            size_hint: 0.5, 0.3
-            text: "Switch Screens"
-            on_release: root.manager.current = "Settings"
+    MDBoxLayout:
+        orientation: "vertical"
+        Image:
+            source: "Icon.png"
+            size_hint: 0.6,0.6
+            pos_hint: {"center_x":0.5}
+            allow_stretch: True
+            keep_ratio: True
+
+        MDBoxLayout:
+            orientation: "vertical"
+            pos_hint: {"center_x":0.5}
+            spacing:20
+            size_hint_x: 0.7
+
+            MDFillRoundFlatButton:
+                text: "New Game"
+                style: "tonal"
+                icon: "plus"
+                on_release: root.manager.current = "InGame"
+
+            MDRaisedButton:
+                text: "Settings"
+                on_release: root.manager.current = "Settings"
+
+            MDRaisedButton:
+                text: "Quit"
+                on_release: app.stop()
 
 <InGame>:
     name: "InGame"
