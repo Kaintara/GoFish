@@ -1,0 +1,16 @@
+<MainMenu>:
+    name: "Menu"
+    BoxLayout:
+        Button:
+            text: "Switch Screens"
+            on_release: root.manager.current = "Settings"
+
+<InGame>:
+    name: "InGame"
+
+<Settings>:
+    name: "Settings"
+    FloatLayout:
+        Button:
+            text: "This is the Settings"
+            on_release: root.manager.current = "Menu"
