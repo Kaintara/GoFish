@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
-
+from kivy.utils import get_color_from_hex
 
 class SM(ScreenManager):
     pass
@@ -25,3 +25,8 @@ class GoFish(App):
 
 if __name__ == "__main__":
     GoFish().run()
+
+def colour(colour):
+    print(get_color_from_hex(colour))
+
+colour('#8fcaca')

@@ -1,7 +1,15 @@
 <MainMenu>:
     name: "Menu"
+    canvas.before:
+        Color: 
+            rgba: 0.56, 0.79, 0.79, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
     BoxLayout:
         Button:
+            pos: self.pos
+            size_hint: 0.5, 0.3
             text: "Switch Screens"
             on_release: root.manager.current = "Settings"
 
@@ -14,3 +22,5 @@
         Button:
             text: "This is the Settings"
             on_release: root.manager.current = "Menu"
+        Label:
+            text: "Change theme"
