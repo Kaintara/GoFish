@@ -46,22 +46,30 @@ class GameEnvironment:
      
 
      def player1_turn(game):
-         pass
+         print("player1")
+         game.turn = 'player2'
      
      def player2_turn(game):
-         pass
+         print("player2")
+         game.turn = 'player3'
      
      def player3_turn(game):
-         pass
+         print("player3")
+         game.turn = 'player1'
 
      def game_loop(game):
+        game.shuffle_cards()
+        game.distribute_cards()
+        game.turn = 'player' + str(random.randint(1,3))
         while True:
-           print("hello")
-           game.player1_turn()
-           game.player2_turn()
-           game.player3_turn()
-           if game.is_game_over ():
-               break
+            if game.turn == 'player1':
+                game.player1_turn()
+            elif game.turn == 'player2':
+                game.player2_turn()
+            elif game.turn == 'player3':
+                game.player3_turn()
+            #if game.is_game_over ():
+               #break
 
 GoFish = GameEnvironment(3)
 GoFish.game_loop()
