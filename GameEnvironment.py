@@ -7,15 +7,12 @@ class GameEnvironment:
           game.amount_of_players = amount_of_players
           game.deck = ["AD","2D","3D","4D","5D","6D","7D","8D","9D","1D","JD","QD","KD","AS","2S","3S","4S","5S","6S","7S","8S","9S","1S","JS","QS","KS","AC","2C","3C","4C","5C","6C","7C","8C","9C","1C","JC","QC","KC","AH","2H","3H","4H","5H","6H","7H","8H","9H","1H","JH","QH","KH"]
           game.shuffled_deck = []
-          game.player1_hand = []
-          game.player2_hand = []
-          game.player3_hand = []
-          game.player1_sets = []
-          game.player2_sets = []
-          game.player3_sets = []
+          game.hands = [[] for _ in range(amount_of_players)]
+          game.sets = [[] for _ in range(amount_of_players)]
           game.turn = ''
           game.moves = ['ask','draw']
           game.history = []
+          '''
           game.state = {
               "hands": {
                   "player1": game.player1_hand,
@@ -31,7 +28,7 @@ class GameEnvironment:
               "current_player": game.turn,
               "history": game.moves,
           }
-
+        '''
 
      def shuffle_cards(game):
          shuffled_deck = game.deck[:]
@@ -39,14 +36,13 @@ class GameEnvironment:
          game.shuffled_deck = shuffled_deck #replace this with random.shuffle()
             
      def distribute_cards(game):
+        players = game.hands
         for i in range(0,8):
-            if game.amount_of_players == 3:
-                game.player1_hand.append(game.shuffled_deck.pop())
-                game.player2_hand.append(game.shuffled_deck.pop())
-                game.player3_hand.append(game.shuffled_deck.pop())
+            for player in players:
+                player.append(game.shuffled_deck.pop())
 
      def draw_card(game,playernum):
-         players = [game.player1_hand,game.player2_hand,game.player3_hand]
+         players = game.hands
          if game.shuffled_deck != []:
             players[playernum - 1].append(game.shuffled_deck.pop())
 
@@ -57,7 +53,7 @@ class GameEnvironment:
 
 
      def check_for_sets(game):
-        players = [game.player1_hand,game.player2_hand,game.player3_hand]
+        players = game.hands
         for x in players:
             counter = []
             for card in x:
@@ -66,19 +62,19 @@ class GameEnvironment:
             sets = [card for card, count in counts.items() if count == 4]
             if sets != []:
                 for set in sets:
-                    if x == game.player1_hand:
-                        game.player1_sets.append(set)
-                    elif x == game.player2_hand:
-                        game.player2_sets.append(set)
-                    else:
-                        game.player3_sets.append(set)
+                    index = game.hands.index(x)
+                    game.sets[index].append(set)
                     game.remove_set(set,x)
                     
-
-
+     def next_vaild_player(game,playernum):
+         for i in range(1, game.amount_of_players + 1):
+             nvp = (playernum + i) % game.amount_of_players
+             if game.hands[nvp] or game.shuffled_deck:
+                 return nvp
+         return None
 
      def get_valid_moves(game,playernum):
-         players = [game.player1_hand,game.player2_hand,game.player3_hand]
+         players = game.hands
          asks = []
          for x in players[playernum - 1]:
              asks.append(x[0])
@@ -86,7 +82,7 @@ class GameEnvironment:
          print(asks)
          available = []
          for i in range(game.amount_of_players):
-             if i != (playernum - 1) and len(players[i]) > 0:
+             if i != (playernum) and len(players[i]) > 0:
                  available.append(i)
          moves = []
          for card in asks:
@@ -97,107 +93,48 @@ class GameEnvironment:
                  
 
      def is_game_over(game):
-         return game.shuffled_deck == [] and game.player1_hand == [] and game.player2_hand == [] and game.player3_hand == []
+         return game.shuffled_deck == [] and all(len(hand) == 0 for hand in game.hands)
      
 
-     def player1_turn(game):
-         moves = game.get_valid_moves(1)
-         i = int(input("Enter Move Number."))
-         global Correct
-         Correct = False
-         if moves[i][0] == 'player2':
-            for x in game.player2_hand:
-                if moves[i][1] == x[0]:
-                    Correct = True
-                    game.player1_hand.append(x)
-                    game.player2_hand.remove(x)
-            if Correct == False:
-                game.draw_card(1)
-                game.turn = 'player2'
-            else:
-                game.turn = 'player1'
-         elif moves[i][0] == 'player3':
-            for x in game.player3_hand:
-                    if moves[i][1] == x[0]:
-                        Correct = True
-                        game.player1_hand.append(x)
-                        game.player3_hand.remove(x)
-            if Correct == False:
-                    game.draw_card(1)
-                    game.turn = 'player3'
-            else:
-                    game.turn = 'player1'
+     def player_turn(game,playernum):
+         moves = game.get_valid_moves(playernum)
+         if not moves:
+             if game.shuffled_deck:
+                game.draw_card(playernum)
+             nvp = game.next_vaild_player(playernum)
+             if nvp is not None:
+                 game.turn = nvp
+             return
+         i = random.randint(0,len(moves)-1)
 
-     
-     def player2_turn(game):
-         moves = game.get_valid_moves(2)
-         i = int(input("Enter Move Number."))
-         global Correct
+         move = moves[i]
+         target_player = int(move[0][6:]) - 1
+         card = move[1]
          Correct = False
-         if moves[i][0] == 'player1':
-            for x in game.player1_hand:
-                if moves[i][1] == x[0]:
-                    Correct = True
-                    game.player2_hand.append(x)
-                    game.player1_hand.remove(x)
-            if Correct == False:
-                game.draw_card(2)
-                game.turn = 'player3'
+
+         for x in game.hands[target_player][:]:
+            if card == x[0]:
+                Correct = True
+                game.hands[playernum].append(x)
+                game.hands[target_player].remove(x)
+         if not Correct:
+            if game.shuffled_deck:
+               game.draw_card(playernum)
+            nvp = game.next_vaild_player(playernum)
+            if nvp is not None:
+                game.turn = nvp
             else:
-                game.turn = 'player2'
-         elif moves[i][0] == 'player3':
-            for x in game.player3_hand:
-                if moves[i][1] == x[0]:
-                    Correct = True
-                    game.player2_hand.append(x)
-                    game.player3_hand.remove(x)
-            if Correct == False:
-                game.draw_card(2)
-                game.turn = 'player3'
-            else:
-                game.turn = 'player2'
-     
-     def player3_turn(game):
-         moves = game.get_valid_moves(3)
-         i = int(input("Enter Move Number."))
-         global Correct
-         Correct = False
-         if moves[i][0] == 'player1':
-            for x in game.player1_hand:
-                if moves[i][1] == x[0]:
-                    Correct = True
-                    game.player3_hand.append(x)
-                    game.player1_hand.remove(x)
-            if Correct == False:
-                game.draw_card(3)
-                game.turn = 'player1'
-            else:
-                game.turn = 'player3'
-         elif moves[i][0] == 'player2':
-            for x in game.player2_hand:
-                if moves[i][1] == x[0]:
-                    Correct = True
-                    game.player3_hand.append(x)
-                    game.player2_hand.remove(x)
-            if Correct == False:
-                game.draw_card(3)
-                game.turn = 'player1'
-            else:
-                game.turn = 'player3'
+                game.turn = None
 
      def game_loop(game):
         game.shuffle_cards()
         game.distribute_cards()
-        game.turn = 'player' + str(random.randint(1,3))
-        while True:
-            if game.is_game_over ():
-               break
-            elif game.turn == 'player1':
-                game.player1_turn()
-            elif game.turn == 'player2':
-                game.player2_turn()
-            elif game.turn == 'player3':
-                game.player3_turn()
+        game.turn = random.randint(0,game.amount_of_players - 1)
+        while not game.is_game_over() and game.turn is not None:
+            game.check_for_sets()
+            game.player_turn(game.turn)
+        for x in game.sets:
+            print(x)
 
 GoFish = GameEnvironment(3)
 print(GoFish)
