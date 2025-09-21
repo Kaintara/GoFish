@@ -41,20 +41,39 @@ class GameEnvironment:
                 game.player2_hand.append(game.shuffled_deck.pop())
                 game.player3_hand.append(game.shuffled_deck.pop())
 
+     def get_valid_moves(game,playernum):
+         players = [game.player1_hand,game.player2_hand,game.player3_hand]
+         asks = []
+         for x in players[playernum - 1]:
+             asks.append(x[0])
+         asks = list(dict.fromkeys(asks))
+         print(asks)
+         available = []
+         for i in range(game.amount_of_players):
+             if i != (playernum - 1) and len(players[i]) > 0:
+                 available.append(i)
+         moves = []
+         for card in asks:
+             for player in available:
+                    moves.append((f'player{player+1}',card)) 
+         print(moves)
+         return moves
+                 
+
      def is_game_over(game):
          return game.shuffled_deck == [] and game.player1_hand == [] and game.player2_hand == [] and game.player3_hand == []
      
 
      def player1_turn(game):
-         print("player1")
+
          game.turn = 'player2'
      
      def player2_turn(game):
-         print("player2")
+
          game.turn = 'player3'
      
      def player3_turn(game):
-         print("player3")
+
          game.turn = 'player1'
 
      def game_loop(game):
@@ -68,8 +87,12 @@ class GameEnvironment:
                 game.player2_turn()
             elif game.turn == 'player3':
                 game.player3_turn()
-            #if game.is_game_over ():
-               #break
+            if game.is_game_over ():
+               break
 
 GoFish = GameEnvironment(3)
-GoFish.game_loop()
+GoFish.shuffle_cards()
+GoFish.distribute_cards()
+print(GoFish.player1_hand)
+GoFish.get_valid_moves(3)
+
