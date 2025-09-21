@@ -1,5 +1,6 @@
 import random
 from collections import Counter
+import copy
 
 class GameEnvironment:
      def __init__(game,amount_of_players):
@@ -22,9 +23,9 @@ class GameEnvironment:
                   "player3": game.player3_hand,
               },
               "sets": {
-                  "player1": [],
-                  "player2": [],
-                  "player3": [],
+                  "player1": game.player1_sets,
+                  "player2": game.player2_sets,
+                  "player3": game.player3_sets,
               },
               "deck" : game.shuffled_deck,
               "current_player": game.turn,
@@ -46,7 +47,8 @@ class GameEnvironment:
 
      def draw_card(game,playernum):
          players = [game.player1_hand,game.player2_hand,game.player3_hand]
-         players[playernum - 1].append(game.shuffled_deck.pop())
+         if game.shuffled_deck != []:
+            players[playernum - 1].append(game.shuffled_deck.pop())
 
      def remove_set(game,card,hand):
          remove = [card+'D',card+'S',card+'H',card+'C']
@@ -114,15 +116,74 @@ class GameEnvironment:
                 game.turn = 'player2'
             else:
                 game.turn = 'player1'
+         elif moves[i][0] == 'player3':
+            for x in game.player3_hand:
+                    if moves[i][1] == x[0]:
+                        Correct = True
+                        game.player1_hand.append(x)
+                        game.player3_hand.remove(x)
+            if Correct == False:
+                    game.draw_card(1)
+                    game.turn = 'player3'
+            else:
+                    game.turn = 'player1'
 
      
      def player2_turn(game):
-
-         game.turn = 'player3'
+         moves = game.get_valid_moves(2)
+         i = int(input("Enter Move Number."))
+         global Correct
+         Correct = False
+         if moves[i][0] == 'player1':
+            for x in game.player1_hand:
+                if moves[i][1] == x[0]:
+                    Correct = True
+                    game.player2_hand.append(x)
+                    game.player1_hand.remove(x)
+            if Correct == False:
+                game.draw_card(2)
+                game.turn = 'player3'
+            else:
+                game.turn = 'player2'
+         elif moves[i][0] == 'player3':
+            for x in game.player3_hand:
+                if moves[i][1] == x[0]:
+                    Correct = True
+                    game.player2_hand.append(x)
+                    game.player3_hand.remove(x)
+            if Correct == False:
+                game.draw_card(2)
+                game.turn = 'player3'
+            else:
+                game.turn = 'player2'
      
      def player3_turn(game):
-
-         game.turn = 'player1'
+         moves = game.get_valid_moves(3)
+         i = int(input("Enter Move Number."))
+         global Correct
+         Correct = False
+         if moves[i][0] == 'player1':
+            for x in game.player1_hand:
+                if moves[i][1] == x[0]:
+                    Correct = True
+                    game.player3_hand.append(x)
+                    game.player1_hand.remove(x)
+            if Correct == False:
+                game.draw_card(3)
+                game.turn = 'player1'
+            else:
+                game.turn = 'player3'
+         elif moves[i][0] == 'player2':
+            for x in game.player2_hand:
+                if moves[i][1] == x[0]:
+                    Correct = True
+                    game.player3_hand.append(x)
+                    game.player2_hand.remove(x)
+            if Correct == False:
+                game.draw_card(3)
+                game.turn = 'player1'
+            else:
+                game.turn = 'player3'
 
      def game_loop(game):
         game.shuffle_cards()
@@ -139,12 +200,5 @@ class GameEnvironment:
                 game.player3_turn()
 
 GoFish = GameEnvironment(3)
-GoFish.shuffle_cards()
-GoFish.distribute_cards()
-
-print(GoFish.player1_hand.sort())
-print(GoFish.player1_hand)
-GoFish.player1_hand = ['5C','5D','5H','5S']
-GoFish.check_for_sets()
-print(GoFish.player1_sets)
-print(GoFish.player1_hand)
+print(GoFish)
+GoFish.game_loop()
