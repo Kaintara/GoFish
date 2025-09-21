@@ -1,6 +1,5 @@
 import random
 from collections import Counter
-import copy
 
 class GameEnvironment:
      def __init__(game,amount_of_players):
@@ -25,7 +24,7 @@ class GameEnvironment:
              game.state["hands"][f'player{i+1}'] = list(game.hands[i])
              game.state["sets"][f'player{i+1}'] = list(game.sets[i])
              game.state["deck"] = list(game.shuffled_deck)
-             game.state["current_player"] = f'player{game.turn+1}'
+             game.state["current_player"] = (game.turn,f'player{game.turn+1}')
              game.state["history"] = list(game.history)
 
      def shuffle_cards(game):
