@@ -10,25 +10,23 @@ class GameEnvironment:
           game.hands = [[] for _ in range(amount_of_players)]
           game.sets = [[] for _ in range(amount_of_players)]
           game.turn = ''
-          game.moves = ['ask','draw']
           game.history = []
-          '''
           game.state = {
-              "hands": {
-                  "player1": game.player1_hand,
-                  "player2": game.player2_hand,
-                  "player3": game.player3_hand,
-              },
-              "sets": {
-                  "player1": game.player1_sets,
-                  "player2": game.player2_sets,
-                  "player3": game.player3_sets,
-              },
+              "hands": {},
+              "sets": {},
               "deck" : game.shuffled_deck,
               "current_player": game.turn,
-              "history": game.moves,
+              "history": [],
           }
-        '''
+
+          
+     def Update_GameState(game):
+         for i in range (0,game.amount_of_players -1):
+             game.state["hands"][f'player{i+1}'] = list(game.hands[i])
+             game.state["sets"][f'player{i+1}'] = list(game.sets[i])
+             game.state["deck"] = list(game.shuffled_deck)
+             game.state["current_player"] = game.turn
+             game.state["history"] = list(game.history)
 
      def shuffle_cards(game):
          shuffled_deck = game.deck[:]
@@ -45,6 +43,8 @@ class GameEnvironment:
          players = game.hands
          if game.shuffled_deck != []:
             players[playernum - 1].append(game.shuffled_deck.pop())
+            game.history.append((f'player{playernum +1}',players[playernum - 1][-1],'draw'))
+            game.Update_GameState()
 
      def remove_set(game,card,hand):
          remove = [card+'D',card+'S',card+'H',card+'C']
@@ -87,7 +87,7 @@ class GameEnvironment:
          moves = []
          for card in asks:
              for player in available:
-                    moves.append((f'player{player+1}',card)) 
+                    moves.append((f'player{player+1}',card,'ask')) 
          print(moves)
          return moves
                  
@@ -106,7 +106,8 @@ class GameEnvironment:
                  game.turn = nvp
              return
          i = random.randint(0,len(moves)-1)
-
+         game.history.append(moves[i])
+         game.Update_GameState()
          move = moves[i]
          target_player = int(move[0][6:]) - 1
          card = move[1]
@@ -115,6 +116,8 @@ class GameEnvironment:
          for x in game.hands[target_player][:]:
             if card == x[0]:
                 Correct = True
+                game.history.append((f'player{playernum+1}',x,'took',f'player{target_player+1}'))
+                game.Update_GameState()
                 game.hands[playernum].append(x)
                 game.hands[target_player].remove(x)
          if not Correct:
@@ -131,11 +134,13 @@ class GameEnvironment:
         game.distribute_cards()
         game.turn = random.randint(0,game.amount_of_players - 1)
         while not game.is_game_over() and game.turn is not None:
+            game.Update_GameState()
+            print(game.state)
             game.check_for_sets()
             game.player_turn(game.turn)
         for x in game.sets:
             print(x)
 
-GoFish = GameEnvironment(3)
+GoFish = GameEnvironment(4)
 print(GoFish)
 GoFish.game_loop()
