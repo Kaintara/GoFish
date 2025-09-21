@@ -40,17 +40,23 @@ state = {'hands':
                       ('player4', '5D', 'took', 'player1')]}
 
 
-def determinization(state): #Function will calculate what cards players and then assume the rest for the first part of the ISMCTS
-    hands = {
-        "Ai_hand" : state["hands"][state["current_player"][1]]
-    }
-    for i in range(0,len(state["hands"])):
-        pass
-    #remove = hands["Ai_hand"]
-    #deck = state["deck"][:]
-    #for card in remove:
-        #deck.remove(card)
-    #hands["deck"] = deck
-    return hands
+def determinization(state): #Function will calculate what cards players have and then assume the rest for the first part of the ISMCTS
+    hands = {k: v for k, v in state["hands"].items() if k != state["current_player"][1]}
+
+    Determined_hands = {k: [] for k, a in state["hands"].items() if k != state["current_player"][1]}
+    Determined_hands["Ai_hand"] = state["hands"][state["current_player"][1]]
+
+    deck = state["deck"]
+    for x in [c for l,c in state["hands"].items() if l != state["current_player"][1]]:
+        deck.extend(x)
+    print(deck)
+
+    history = state["history"]
+
+    for i in (0,len(history)+1):
+        if history[2] == 'ask':
+            pass
+ 
+    return Determined_hands
 
 print(determinization(state))
