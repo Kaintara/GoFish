@@ -1,5 +1,5 @@
 import random
-import copy
+from collections import Counter
 
 class GameEnvironment:
      def __init__(game,amount_of_players):
@@ -9,6 +9,9 @@ class GameEnvironment:
           game.player1_hand = []
           game.player2_hand = []
           game.player3_hand = []
+          game.player1_sets = []
+          game.player2_sets = []
+          game.player3_sets = []
           game.turn = ''
           game.moves = ['ask','draw']
           game.history = []
@@ -45,6 +48,15 @@ class GameEnvironment:
          players = [game.player1_hand,game.player2_hand,game.player3_hand]
          players[playernum - 1].append(game.shuffled_deck.pop())
 
+     def check_for_sets(game):
+         counter = []
+         for card in game.player1_hand:
+             counter.append(card[:-1])
+         counts = Counter(counter)
+         sets = [card for card, count in counts.items() if count == 4]
+         print(sets)
+
+
      def get_valid_moves(game,playernum):
          players = [game.player1_hand,game.player2_hand,game.player3_hand]
          asks = []
@@ -69,8 +81,6 @@ class GameEnvironment:
      
 
      def player1_turn(game):
-         print(game.player1_hand)
-         print(game.player2_hand)
          moves = game.get_valid_moves(1)
          i = int(input("Enter Move Number."))
          global Correct
@@ -83,12 +93,8 @@ class GameEnvironment:
                     game.player2_hand.remove(x)
             if Correct == False:
                 game.draw_card(1)
-                print(game.player1_hand)
-                print(game.player2_hand)
                 game.turn = 'player2'
             else:
-                print(game.player1_hand)
-                print(game.player2_hand)
                 game.turn = 'player1'
 
      
@@ -117,5 +123,8 @@ class GameEnvironment:
 GoFish = GameEnvironment(3)
 GoFish.shuffle_cards()
 GoFish.distribute_cards()
-GoFish.player1_turn()
 
+print(GoFish.player1_hand.sort())
+print(GoFish.player1_hand)
+GoFish.player1_hand = ['5C','5D','5H','5S']
+GoFish.check_for_sets()
