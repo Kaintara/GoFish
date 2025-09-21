@@ -4,7 +4,7 @@ from collections import Counter
 class GameEnvironment:
      def __init__(game,amount_of_players):
           game.amount_of_players = amount_of_players
-          game.deck = ["AD","2D","3D","4D","5D","6D","7D","8D","9D","10D","JD","QD","KD","AS","2S","3S","4S","5S","6S","7S","8S","9S","10S","JS","QS","KS","AC","2C","3C","4C","5C","6C","7C","8C","9C","10C","JC","QC","KC","AH","2H","3H","4H","5H","6H","7H","8H","9H","10H","JH","QH","KH"]
+          game.deck = ["AD","2D","3D","4D","5D","6D","7D","8D","9D","1D","JD","QD","KD","AS","2S","3S","4S","5S","6S","7S","8S","9S","1S","JS","QS","KS","AC","2C","3C","4C","5C","6C","7C","8C","9C","1C","JC","QC","KC","AH","2H","3H","4H","5H","6H","7H","8H","9H","1H","JH","QH","KH"]
           game.shuffled_deck = []
           game.player1_hand = []
           game.player2_hand = []
@@ -48,13 +48,31 @@ class GameEnvironment:
          players = [game.player1_hand,game.player2_hand,game.player3_hand]
          players[playernum - 1].append(game.shuffled_deck.pop())
 
+     def remove_set(game,card,hand):
+         remove = [card+'D',card+'S',card+'H',card+'C']
+         for card in remove:
+             hand.remove(card)
+
+
      def check_for_sets(game):
-         counter = []
-         for card in game.player1_hand:
-             counter.append(card[:-1])
-         counts = Counter(counter)
-         sets = [card for card, count in counts.items() if count == 4]
-         print(sets)
+        players = [game.player1_hand,game.player2_hand,game.player3_hand]
+        for x in players:
+            counter = []
+            for card in x:
+                counter.append(card[:-1])
+            counts = Counter(counter)
+            sets = [card for card, count in counts.items() if count == 4]
+            if sets != []:
+                for set in sets:
+                    if x == game.player1_hand:
+                        game.player1_sets.append(set)
+                    elif x == game.player2_hand:
+                        game.player2_sets.append(set)
+                    else:
+                        game.player3_sets.append(set)
+                    game.remove_set(set,x)
+                    
+
 
 
      def get_valid_moves(game,playernum):
@@ -128,3 +146,5 @@ print(GoFish.player1_hand.sort())
 print(GoFish.player1_hand)
 GoFish.player1_hand = ['5C','5D','5H','5S']
 GoFish.check_for_sets()
+print(GoFish.player1_sets)
+print(GoFish.player1_hand)
