@@ -41,6 +41,10 @@ class GameEnvironment:
                 game.player2_hand.append(game.shuffled_deck.pop())
                 game.player3_hand.append(game.shuffled_deck.pop())
 
+     def draw_card(game,playernum):
+         players = [game.player1_hand,game.player2_hand,game.player3_hand]
+         players[playernum - 1].append(game.shuffled_deck.pop())
+
      def get_valid_moves(game,playernum):
          players = [game.player1_hand,game.player2_hand,game.player3_hand]
          asks = []
@@ -65,8 +69,28 @@ class GameEnvironment:
      
 
      def player1_turn(game):
+         print(game.player1_hand)
+         print(game.player2_hand)
+         moves = game.get_valid_moves(1)
+         i = int(input("Enter Move Number."))
+         global Correct
+         Correct = False
+         if moves[i][0] == 'player2':
+            for x in game.player2_hand:
+                if moves[i][1] == x[0]:
+                    Correct = True
+                    game.player1_hand.append(x)
+                    game.player2_hand.remove(x)
+            if Correct == False:
+                game.draw_card(1)
+                print(game.player1_hand)
+                print(game.player2_hand)
+                game.turn = 'player2'
+            else:
+                print(game.player1_hand)
+                print(game.player2_hand)
+                game.turn = 'player1'
 
-         game.turn = 'player2'
      
      def player2_turn(game):
 
@@ -81,18 +105,17 @@ class GameEnvironment:
         game.distribute_cards()
         game.turn = 'player' + str(random.randint(1,3))
         while True:
-            if game.turn == 'player1':
+            if game.is_game_over ():
+               break
+            elif game.turn == 'player1':
                 game.player1_turn()
             elif game.turn == 'player2':
                 game.player2_turn()
             elif game.turn == 'player3':
                 game.player3_turn()
-            if game.is_game_over ():
-               break
 
 GoFish = GameEnvironment(3)
 GoFish.shuffle_cards()
 GoFish.distribute_cards()
-print(GoFish.player1_hand)
-GoFish.get_valid_moves(3)
+GoFish.player1_turn()
 
