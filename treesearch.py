@@ -1,4 +1,5 @@
 #from GameEnvironment import GameEnvironment
+import random
 import copy
 from collections import Counter
 
@@ -41,22 +42,38 @@ state = {'hands':
 
 
 def determinization(state): #Function will calculate what cards players have and then assume the rest for the first part of the ISMCTS
-    hands = {k: v for k, v in state["hands"].items() if k != state["current_player"][1]}
+    Ai = state["current_player"][1]
+    hands = {k: v for k, v in state["hands"].items() if k != Ai}
 
-    Determined_hands = {k: [] for k, a in state["hands"].items() if k != state["current_player"][1]}
-    Determined_hands["Ai_hand"] = state["hands"][state["current_player"][1]]
+    Determined_hands = {k: [] for k, a in state["hands"].items() if k != Ai}
+    Determined_hands["Ai_hand"] = state["hands"][Ai]
 
     deck = state["deck"]
-    for x in [c for l,c in state["hands"].items() if l != state["current_player"][1]]:
+    for x in [c for l,c in state["hands"].items() if l != Ai]:
         deck.extend(x)
     print(deck)
 
     history = state["history"]
 
-    for i in (0,len(history)+1):
-        if history[2] == 'ask':
-            pass
- 
+    for i in history:
+        if i[2] == 'took' and i[0] != Ai:
+            Determined_hands[i[0]].append(i[1])
+            deck.remove(i[1])
+    for i in history:
+        if i[2] == 'ask' and i[0] != Ai:
+            lst = [x for x in deck if x.startswith(i[1])]
+            card = lst[random.randint(0,len(lst)-1)]
+            Determined_hands[i[0]].append(card)
+            deck.remove(card)
+    for i in history:
+        if i[0] != Ai:
+            if len(hands[i[0]]) != len(Determined_hands[i[0]]):
+                while len(Determined_hands[i[0]]) < len(hands[i[0]]):
+                    card = deck[random.randint(0,len(deck)-1)]
+                    Determined_hands[i[0]].append(card)
+                    deck.remove(card)
+
+    print(deck)
     return Determined_hands
 
 print(determinization(state))
