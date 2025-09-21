@@ -21,11 +21,11 @@ class GameEnvironment:
 
           
      def Update_GameState(game):
-         for i in range (0,game.amount_of_players -1):
+         for i in range (0,game.amount_of_players):
              game.state["hands"][f'player{i+1}'] = list(game.hands[i])
              game.state["sets"][f'player{i+1}'] = list(game.sets[i])
              game.state["deck"] = list(game.shuffled_deck)
-             game.state["current_player"] = game.turn
+             game.state["current_player"] = f'player{game.turn+1}'
              game.state["history"] = list(game.history)
 
      def shuffle_cards(game):
@@ -42,8 +42,8 @@ class GameEnvironment:
      def draw_card(game,playernum):
          players = game.hands
          if game.shuffled_deck != []:
-            players[playernum - 1].append(game.shuffled_deck.pop())
-            game.history.append((f'player{playernum +1}',players[playernum - 1][-1],'draw'))
+            players[playernum].append(game.shuffled_deck.pop())
+            game.history.append((f'player{playernum + 1}',players[playernum][-1],'draw'))
             game.Update_GameState()
 
      def remove_set(game,card,hand):
@@ -76,10 +76,9 @@ class GameEnvironment:
      def get_valid_moves(game,playernum):
          players = game.hands
          asks = []
-         for x in players[playernum - 1]:
+         for x in players[playernum]:
              asks.append(x[0])
          asks = list(dict.fromkeys(asks))
-         print(asks)
          available = []
          for i in range(game.amount_of_players):
              if i != (playernum) and len(players[i]) > 0:
@@ -88,7 +87,6 @@ class GameEnvironment:
          for card in asks:
              for player in available:
                     moves.append((f'player{player+1}',card,'ask')) 
-         print(moves)
          return moves
                  
 
@@ -116,7 +114,7 @@ class GameEnvironment:
          for x in game.hands[target_player][:]:
             if card == x[0]:
                 Correct = True
-                game.history.append((f'player{playernum+1}',x,'took',f'player{target_player+1}'))
+                game.history.append((f'player{(playernum+1)}',x,'took',f'player{(target_player+1)}'))
                 game.Update_GameState()
                 game.hands[playernum].append(x)
                 game.hands[target_player].remove(x)
@@ -138,6 +136,7 @@ class GameEnvironment:
             print(game.state)
             game.check_for_sets()
             game.player_turn(game.turn)
+            input()
         for x in game.sets:
             print(x)
 
