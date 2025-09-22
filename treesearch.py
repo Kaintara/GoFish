@@ -1,10 +1,8 @@
-#from GameEnvironment import GameEnvironment
 import random
 import copy
 from collections import Counter
-from Game import Game
 
-state = {'hands': 
+test_state = {'hands': 
          {'player1': 
           ['JS', '7S', '2H', '3C', '8S', '4S', 'JD', 'AC'], 
           'player2': ['9S', '6S', '2D', 'QH', '5C', '4D', 'JC'], 
@@ -64,14 +62,37 @@ def determinization(state): #Function will calculate what cards players have and
 
     return Determined_hands
 
-print(determinization(state))
+print(determinization(test_state))
+print(all(len(hand) == 0 for hand in test_state["hands"]))
 
 class GameEnvironment:
     def __init__(game, amount_of_players):
         super().__init__(amount_of_players)
 
+    def get_legal_moves(state):
+        player = state["current_player"][0]
+        hand = state["hands"]
+        #for x in players[playernum]:
+       #     asks.append(x[0])
+        asks = list(dict.fromkeys(asks))
+        available = []
+      #  for i in range(game.amount_of_players):
+      #      if i != (playernum) and len(players[i]) > 0:
+      #           available.append(i)
+        moves = []
+        for card in asks:
+            for player in available:
+                    moves.append((f'player{player+1}',card,'ask')) 
+        return moves
+
     def clone_state(self, state):
-        return co
+        return copy.deepcopy(state)
+    
+    def is_terminal(state):
+        return (not state["deck"]) and all(len(hand) == 0 for hand in state["hands"].values())
+    
+
+
 
 
 
@@ -87,5 +108,3 @@ class Node:
 
     def tried_all_moves(self):
         return self.untried_moves is None and len(self.untried_moves) == 0
-    
-    def 
