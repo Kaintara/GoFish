@@ -2,17 +2,7 @@
 import random
 import copy
 from collections import Counter
-
-#Go_Fish = GameEnvironment(3)
-
-class Node:
-    def __init__(self, state, parent=None):
-        self.state = state
-        self.parent = parent
-        self.children = []
-        self.visits = 0
-        self.value = 0.0
-
+from Game import Game
 
 state = {'hands': 
          {'player1': 
@@ -51,7 +41,6 @@ def determinization(state): #Function will calculate what cards players have and
     deck = state["deck"]
     for x in [c for l,c in state["hands"].items() if l != Ai]:
         deck.extend(x)
-    print(deck)
 
     history = state["history"]
 
@@ -73,7 +62,30 @@ def determinization(state): #Function will calculate what cards players have and
                     Determined_hands[i[0]].append(card)
                     deck.remove(card)
 
-    print(deck)
     return Determined_hands
 
 print(determinization(state))
+
+class GameEnvironment:
+    def __init__(game, amount_of_players):
+        super().__init__(amount_of_players)
+
+    def clone_state(self, state):
+        return co
+
+
+
+class Node:
+    def __init__(self, state, parent=None, move_from_parent=None):
+        self.state = state
+        self.parent = parent
+        self.move_from_parent = move_from_parent
+        self.children = []
+        self.untried_moves = None
+        self.visits = 0
+        self.value = 0.0
+
+    def tried_all_moves(self):
+        return self.untried_moves is None and len(self.untried_moves) == 0
+    
+    def 
