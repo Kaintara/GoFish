@@ -7,6 +7,21 @@ class Game:
         game.amount_of_players = amount_of_players
         game.deck = ["AD","2D","3D","4D","5D","6D","7D","8D","9D","1D","JD","QD","KD","AS","2S","3S","4S","5S","6S","7S","8S","9S","1S","JS","QS","KS","AC","2C","3C","4C","5C","6C","7C","8C","9C","1C","JC","QC","KC","AH","2H","3H","4H","5H","6H","7H","8H","9H","1H","JH","QH","KH"]
         game.shuffled_deck = []
+        game.rank_order = {
+            'A': 14,
+            'K': 13,
+            'Q': 12,
+            'J': 11,
+            '1': 10,
+            '9': 9,
+            '8': 8,
+            '7': 7,
+            '6': 6,
+            '5': 5,
+            '4': 4,
+            '3': 3,
+            '2': 2
+        }
         game.hands = [[] for _ in range(amount_of_players)]
         game.sets = [[] for _ in range(amount_of_players)]
         game.turn = ''
@@ -55,25 +70,9 @@ class Game:
 
     def sort_cards(game):
         players = game.hands
-        rank_order = {
-            'A': 14,
-            'K': 13,
-            'Q': 12,
-            'J': 11,
-            '1': 10,
-            '9': 9,
-            '8': 8,
-            '7': 7,
-            '6': 6,
-            '5': 5,
-            '4': 4,
-            '3': 3,
-            '2': 2
-        }
         for x in players:
-            x.sort(key=(lambda a : rank_order[a[0]]))
+            x.sort(key=(lambda a : game.rank_order[a[0]]))
             print(x)
-            
 
 
     def check_for_sets(game):

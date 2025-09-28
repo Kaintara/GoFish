@@ -1,33 +1,44 @@
+from kivy.app import App
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.button import Button
 from kivy.utils import get_color_from_hex
-from kivymd.app import MDApp
-from kivymd.uix.screen import MDScreen
-from kivymd.uix.button import M
-from kivymd.uix.screenmanager import MDScreenManager
+from kivy.lang.builder import Builder
+from kivy.graphics import Color, RoundedRectangle
+from kivy.core.text import FontContextManager as FCM
 
-class MainMenu(MDScreen):
+
+#Custom Buttons/Cards
+class RoundedButton(Button):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+
+#Screens
+class SM(ScreenManager):
     pass
 
-class InGame(MDScreen):
+class MainMenu(Screen):
     pass
 
-class Settings(MDScreen):
+class InGame(Screen):
     pass
 
-class GoFish(MDApp):
+class Settings(Screen):
+    pass
+
+
+#App Bulid
+class GoFishApp(App):
     def build(self):
-        self.use_material3 = True
-        self.theme_cls.primary_palette = "Teal"
-        sm = MDScreenManager()
+        sm = SM()
         sm.add_widget(MainMenu(name="Menu"))
         sm.add_widget(InGame(name="InGame"))
         sm.add_widget(Settings(name="Settings"))
+        sm.current = "Menu"
         return sm
 
-
+#Running App
 if __name__ == "__main__":
-    GoFish().run()
+    GoFishApp().run()
 
 def colour(colour):
     print(get_color_from_hex(colour))
-
-colour('#8fcaca')

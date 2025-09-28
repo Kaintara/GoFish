@@ -1,48 +1,39 @@
+#:kivy 2.3.0
+
 <MainMenu>:
-    name: "Menu"
     canvas.before:
         Color: 
             rgba: 0.56, 0.79, 0.79, 1
         Rectangle:
             pos: self.pos
             size: self.size
-    MDBoxLayout:
-        orientation: "vertical"
-        Image:
-            source: "Icon.png"
-            size_hint: 0.6,0.6
-            pos_hint: {"center_x":0.5}
-            allow_stretch: True
-            keep_ratio: True
-
-        MDBoxLayout:
-            orientation: "vertical"
-            pos_hint: {"center_x":0.5}
-            spacing:20
-            size_hint_x: 0.7
-
-            MDIconButton:
-                text: "New Game"
-                style: "tonal"
-                icon: "plus"
-                on_release: root.manager.current = "InGame"
-
-            MDRaisedButton:
-                text: "Settings"
-                on_release: root.manager.current = "Settings"
-
-            MDRaisedButton:
-                text: "Quit"
-                on_release: app.stop()
+    BoxLayout:
+        orientation: 'vertical'
+        Button:
+            size_hint: 0.5, 0.3
+            text: "Go to Settings"
+            font_name: 'C:\\Users\\PlayerTwo-M\\Desktop\\Athena Award Projects\\GoFish\\Catways.ttf'
+            on_release: root.manager.current = "Settings"
+        Button:
+            size_hint: 0.5, 0.3
+            text: "Go to InGame"
+            on_release: root.manager.current = "InGame"
 
 <InGame>:
-    name: "InGame"
+    BoxLayout:
+        Label:
+            text: "In Game Screen"
+        Button:
+            text: "Back to Menu"
+            on_release: root.manager.current = "Menu"
 
 <Settings>:
-    name: "Settings"
     FloatLayout:
         Button:
-            text: "This is the Settings"
+            text: "Back to Menu"
+            size_hint: 0.4, 0.15
+            pos_hint: {"center_x": 0.5, "y": 0.6}
             on_release: root.manager.current = "Menu"
         Label:
             text: "Change theme"
+            pos_hint: {"center_x": 0.5, "y": 0.4}
