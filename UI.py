@@ -1,11 +1,18 @@
+from kivy.config import Config
+
+#Font
+Config.set(
+        'kivy', 
+        'default_font', 
+        "C:/Users/PlayerTwo-M/Desktop/Athena Award Projects/GoFish/Catways.ttf"
+        )
+
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.button import Button
 from kivy.utils import get_color_from_hex
 from kivy.lang.builder import Builder
 from kivy.graphics import Color, RoundedRectangle
-from kivy.core.text import FontContextManager as FCM
-
 
 #Custom Buttons/Cards
 class RoundedButton(Button):
