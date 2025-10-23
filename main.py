@@ -32,13 +32,15 @@ class Rules(MDScreen):
 class GoFishApp(MDApp):
     
     def build(self):
-
+        #App Theming
         self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "Pink"
         self.theme_cls.primary_hue = "1000"
+        self.theme_cls.theme_style_switch_animation = True
+        self.theme_cls.theme_style_switch_animation_duration = 0.8
 
         Window.set_icon(("icon.png"))
-
+        #App Default Font & Font Styles
         LabelBase.register(
             name="cataway",
             fn_regular="Catways.ttf",
@@ -61,7 +63,7 @@ class GoFishApp(MDApp):
                 "font-size": sp(36),
             },
         }
-
+        #Assigning
         sm = SM()
         sm.add_widget(MainMenu(name="Menu"))
         sm.add_widget(InGame(name="InGame"))
