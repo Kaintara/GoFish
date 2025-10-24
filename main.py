@@ -48,8 +48,8 @@ class GoFishApp(MDApp):
     def build(self):
         #App Theming
         self.theme_cls.theme_style = "Light"
-        self.theme_cls.primary_palette = "Pink"
-        self.theme_cls.primary_hue = "100"
+        self.theme_cls.primary_palette = "Red"
+        self.theme_cls.primary_hue = "900"
         self.theme_cls.theme_style_switch_animation_duration = 0.4
 
         Window.set_icon(("icon.png"))
@@ -98,6 +98,18 @@ class GoFishApp(MDApp):
             self.sm_stack.insert(0, widget)
         else:
             self.sm_stack.insert(0, widget)
+
+    def switch_icon(self,widget):
+        if widget.name == "light":
+            widget.icon = "weather-night"
+            widget.name = "dark"
+        else:
+            widget.name = "light"
+            widget.icon = "white-balance-sunny"
+        
+
+    def change_theme(self,colour):
+        pass
         
 #Running App
 if __name__ == "__main__":

@@ -1,19 +1,19 @@
 #:kivy 2.3.0
 
 <MainMenu>:
-    md_bg_color: self.theme_cls.backgroundColor
+    md_bg_color: self.theme_cls.surfaceColor
     MDFloatLayout:
-        MDIconButton:
+        MDIconButton: #Settings Button
             pos_hint: {"center_x":0.95, "center_y": 0.95}
             size_hint: .05, .05
             icon: "menu"
             on_release: 
                 app.sm_stacky("Menu")
                 root.manager.current = "Settings"
-        Image:
+        Image: #UI image
             source: "Icon.png"
             pos_hint: {"center_x": 0.5, "center_y": 0.8}
-        MDLabel:
+        MDLabel: #Title
             width: root.width
             height: root.height*0.3
             text: "Go Fish!"
@@ -36,9 +36,15 @@
 
 
 <InGame>:
-    md_bg_color: self.theme_cls.backgroundColor
+    md_bg_color: self.theme_cls.surfaceColor
     MDFloatLayout:
-        MDIconButton:
+        MDIconButton: #Back button
+            pos_hint: {"center_x":0.05, "center_y": 0.95}
+            size_hint: .05, .05
+            icon: "arrow-left"
+            on_release: 
+                app.back()
+        MDIconButton: #Settings Button
             pos_hint: {"center_x":0.95, "center_y": 0.95}
             size_hint: .05, .05
             icon: "menu"
@@ -52,7 +58,13 @@
 <Rules>:
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
-        MDIconButton:
+        MDIconButton: #Back button
+            pos_hint: {"center_x":0.05, "center_y": 0.95}
+            size_hint: .05, .05
+            icon: "arrow-left"
+            on_release: 
+                app.back()
+        MDIconButton: #Settings Button
             pos_hint: {"center_x":0.95, "center_y": 0.95}
             size_hint: .05, .05
             icon: "menu"
@@ -66,13 +78,15 @@
 <Settings>:
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
-        MDIconButton:
+        MDIconButton: #Back Button
             pos_hint: {"center_x":0.95, "center_y": 0.95}
             size_hint: .05, .05
             icon: "backburger"
             on_release: app.back()
-        MDButton:
-            style: "filled"
-            on_release: app.theme_cls.switch_theme()
-            MDButtonText:
-                text: "Change Theme"
+        MDIconButton:
+            name: "light"
+            style: "tonal"
+            icon: "white-balance-sunny"
+            on_release: 
+                app.switch_icon(self)
+                app.theme_cls.switch_theme()
