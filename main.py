@@ -87,7 +87,10 @@ class GoFishApp(MDApp):
     
     def back(self): #Back button
         sm = self.root
-        if sm.previous:
+        if self.sm_stack[0] == sm.current:
+            self.sm_stack.remove(sm.current)
+            sm.current = self.sm_stack[0]
+        elif sm.previous:
             sm.current = self.sm_stack[0]
         else:
             sm.current = "Menu"
