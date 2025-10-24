@@ -3,16 +3,13 @@
 <MainMenu>:
     md_bg_color: self.theme_cls.surfaceColor
     MDFloatLayout:
-        MDIconButton: #Settings Button
-            pos_hint: {"center_x":0.95, "center_y": 0.95}
-            size_hint: .05, .05
-            icon: "menu"
-            on_release: 
-                app.sm_stacky("Menu")
-                root.manager.current = "Settings"
         Image: #UI image
             source: "Icon.png"
             pos_hint: {"center_x": 0.5, "center_y": 0.8}
+            size_hint: None, None
+            size: dp(250), dp(250)
+            allow_stretch: False
+            keep_ratio: True
         MDLabel: #Title
             width: root.width
             height: root.height*0.3
@@ -33,31 +30,41 @@
                 on_release: 
                     app.sm_stacky("Menu")
                     root.manager.current = "Rules"
+        MDIconButton: #Settings Button
+            pos_hint: {"right":0.98, "top": 0.98}
+            size: dp(48), dp(48)
+            icon: "menu"
+            on_release: 
+                app.sm_stacky("Menu")
+                root.manager.current = "Settings"
 
 
 <InGame>:
     md_bg_color: self.theme_cls.surfaceColor
     MDFloatLayout:
+        MDTextField:
+            id: Input
+            pos_hint: {"center_y":0.5, "center_x":0.5}
+            mode: "filled"
         MDIconButton: #Back button
-            pos_hint: {"center_x":0.05, "center_y": 0.95}
+            pos_hint: {"left":0.98, "top": 0.98}
             size_hint: .05, .05
             icon: "arrow-left"
             on_release: 
                 app.back()
         MDIconButton: #Settings Button
-            pos_hint: {"center_x":0.95, "center_y": 0.95}
+            pos_hint: {"right":0.98, "top": 0.98}
             size_hint: .05, .05
             icon: "menu"
             on_release: 
                 app.sm_stacky("InGame")
                 root.manager.current = "Settings"
-        MDTextField:
-            id: Input
-            pos_hint: {"center_y":0.5, "center_x":0.5}
-            mode: "filled"
 <Rules>:
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
+        MDScrollView:
+            MDLabel:
+                text:"Hello!"
         MDIconButton: #Back button
             pos_hint: {"center_x":0.05, "center_y": 0.95}
             size_hint: .05, .05
@@ -71,18 +78,10 @@
             on_release: 
                 app.sm_stacky("Rules")
                 root.manager.current = "Settings"
-        MDScrollView:
-            MDLabel:
-                text:"Hello!"
 
 <Settings>:
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
-        MDIconButton: #Back Button
-            pos_hint: {"center_x":0.95, "center_y": 0.95}
-            size_hint: .05, .05
-            icon: "backburger"
-            on_release: app.back()
         MDIconButton:
             name: "light"
             style: "tonal"
@@ -90,3 +89,8 @@
             on_release: 
                 app.switch_icon(self)
                 app.theme_cls.switch_theme()
+        MDIconButton: #Back Button
+            pos_hint: {"left":0.98, "top": 0.98}
+            size_hint: .05, .05
+            icon: "backburger"
+            on_release: app.back()
