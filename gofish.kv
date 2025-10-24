@@ -3,12 +3,13 @@
 <MainMenu>:
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
-        Settings_Btn:
+        MDIconButton:
             pos_hint: {"center_x":0.95, "center_y": 0.95}
             size_hint: .05, .05
-            MDIconButton:
-                icon: "menu"
-                on_release: app.settings(self.parent)
+            icon: "menu"
+            on_release: 
+                app.sm_stacky("Menu")
+                root.manager.current = "Settings"
         Image:
             source: "Icon.png"
             pos_hint: {"center_x": 0.5, "center_y": 0.8}
@@ -24,26 +25,52 @@
             pos_int: {"center_x": 0.5, "center_y": 0.3}
             MDButton:
                 style: "tonal"
-                on_release: root.manager.current = "InGame"
+                on_release: 
+                    app.sm_stacky("Menu")
+                    root.manager.current = "InGame"
             MDButton:
                 style: "tonal"
-                on_release: root.manager.current = "SRules"
+                on_release: 
+                    app.sm_stacky("Menu")
+                    root.manager.current = "Rules"
 
 
 <InGame>:
-   
+    md_bg_color: self.theme_cls.backgroundColor
+    MDFloatLayout:
+        MDIconButton:
+            pos_hint: {"center_x":0.95, "center_y": 0.95}
+            size_hint: .05, .05
+            icon: "menu"
+            on_release: 
+                app.sm_stacky("InGame")
+                root.manager.current = "Settings"
+        MDTextField:
+            id: Input
+            pos_hint: {"center_y":0.5, "center_x":0.5}
+            mode: "filled"
 <Rules>:
+    md_bg_color: self.theme_cls.backgroundColor
+    MDFloatLayout:
+        MDIconButton:
+            pos_hint: {"center_x":0.95, "center_y": 0.95}
+            size_hint: .05, .05
+            icon: "menu"
+            on_release: 
+                app.sm_stacky("Rules")
+                root.manager.current = "Settings"
+        MDScrollView:
+            MDLabel:
+                text:"Hello!"
 
 <Settings>:
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
-        Settings_Btn:
+        MDIconButton:
             pos_hint: {"center_x":0.95, "center_y": 0.95}
             size_hint: .05, .05
-            rotate_value_angle: 90
-            MDIconButton:
-                icon: "menu"
-                on_release: app.settings(self.parent)
+            icon: "backburger"
+            on_release: app.back()
         MDButton:
             style: "filled"
             on_release: app.theme_cls.switch_theme()

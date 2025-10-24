@@ -21,10 +21,6 @@ from kivymd.uix.boxlayout import MDBoxLayout
 class Playing_Card(MDButton):
     pass
 
-class Settings_Btn(RotateBehavior, MDBoxLayout):
-    pass
-
-
 #Screens
 class SM(MDScreenManager):
     pass
@@ -44,6 +40,10 @@ class Rules(MDScreen):
 
 #App Bulid
 class GoFishApp(MDApp):
+
+    def __init__(self, **kwargs):
+        self.sm_stack = []
+        super().__init__(**kwargs)
     
     def build(self):
         #App Theming
@@ -84,25 +84,21 @@ class GoFishApp(MDApp):
         sm.add_widget(Settings(name="Settings"))
         sm.current = "Menu"
         return sm
+    
+    def back(self): #Back button
+        sm = self.root
+        if sm.previous:
+            sm.current = self.sm_stack[0]
+        else:
+            sm.current = "Menu"
 
-    def settings(self,widget):
-        current = self.root.current
-        self.root.transition.duration = 0
-
-        if current == "Menu": #Opening Settings
-            
-            anim = Animation(rotate_value_angle=90, d=0.3)
-            anim.bind(on_complete=lambda *x: self.switch_screen("Settings"))
-            anim.start(widget)
-
-        else: #Close Settings
-            anim = Animation(rotate_value_angle=0, d=0.3)
-            anim.bind(on_complete=lambda *x: self.switch_screen("Menu"))
-            anim.start(widget)
-
-    def switch_screen(self, screen_name):
-        self.root.current = screen_name
-
+    def sm_stacky(self,widget): #Stores order of screens visited for back button
+        if widget in self.sm_stack:
+            self.sm_stack.remove(widget)
+            self.sm_stack.insert(0, widget)
+        else:
+            self.sm_stack.insert(0, widget)
+        
 #Running App
 if __name__ == "__main__":
     GoFishApp().run()
