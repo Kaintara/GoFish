@@ -19,3 +19,25 @@ def settings(self,widget):
             anim.start(widget)
 
 '''
+
+''''
+MDLabel:
+                    text: "J"
+                    pos_hint: {"y":1, "x":0}
+                    font_style: "cataway"
+                    role: "small"
+                MDLabel:
+                    pos_hint: {"x":1,"y":0}
+                    text: "J"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: "right"
+                    valign: "bottom"
+                    canvas.before:
+                        PushMatrix
+                        Rotate:
+                            angle: 180
+                            origin: self.center
+                    canvas.after:
+                        PopMatrix
+'''

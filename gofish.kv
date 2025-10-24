@@ -3,6 +3,7 @@
 <MainMenu>:
     md_bg_color: self.theme_cls.surfaceColor
     MDFloatLayout:
+   
         MDCard:
             size_hint: None, None
             size: "64dp", "89dp"
@@ -10,18 +11,14 @@
             MDRelativeLayout:
                 MDIconButton:
                     theme_icon_color: "Custom"
+                    icon_color: app.theme_cls.primaryColor
                     icon: "cards-spade"
                     size_hint: None, None
                     size: "50dp", "50dp"
                     theme_font_size: "Custom"
                     font_size: "50sp"
                     pos_hint: {"center_x":0.5, "center_y":0.5}
-                MDLabel:
-                    text: "J"
-                    pos_hint: {"center_x":0, "center_y":1}
-                MDLabel:
-                    text: "J"
-                    pos_hint: {"center_x":1, "center_y":0}
+
 
         Image: #UI image
             source: "Icon.png"

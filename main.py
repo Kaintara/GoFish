@@ -1,5 +1,7 @@
 #Imports
 
+import random
+
 #Kivy
 from kivy.core.window import Window
 from kivy.core.text import LabelBase
@@ -14,12 +16,49 @@ from kivymd.uix.screen import MDScreen
 from kivymd.uix.button import MDButton, MDButtonIcon
 from kivymd.uix.behaviors import RotateBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.card import MDCard
+from kivymd.uix.relativelayout import RelativeLayout
 
 
 
 #Custom Buttons/Cards
-class Playing_Card(MDButton):
-    pass
+class Playing_Card(MDCard):
+    def __init__(self,suit="",rank="",**kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = (None,None)
+        self.size = ("64dp", "89dp")
+        self.pos_hint = {"center_x": 0.5, "center_y": 0.5}
+        self.suit = suit
+        app = MDApp.get_running_app()
+        if self.suit == "cards-diamond" or self.suit == "cards-heart":
+            self.colour = app.theme_cls.inversePrimaryColor
+        else:
+            self.colour = app.theme_cls.primaryColor
+        self.layout = RelativeLayout()
+        self.icon = MDButtonIcon(
+            icon = self.suit,
+            size_hint = (None,None),
+            theme_font_size = "Custom",
+            font_size = "50sp",
+            theme_icon_color= "Custom",
+            icon_color = self.colour, 
+            pos_hint = {"center_x":0.5, "center_y":0.5}
+        )
+        self.layout.add_widget(self.icon)
+        self.add_widget(self.layout)
+    def change_colour(self):
+        self.layout.remove_widget(self.icon)
+        self.icon = MDButtonIcon(
+            icon = self.suit,
+            size_hint = (None,None),
+            theme_font_size = "Custom",
+            font_size = "50sp",
+            theme_icon_color= "Custom",
+            icon_color = self.colour, 
+            pos_hint = {"center_x":0.5, "center_y":0.5}
+        )
+        self.layout.add_widget(self.icon)
+        
 
 #Screens
 class SM(MDScreenManager):
@@ -43,6 +82,11 @@ class GoFishApp(MDApp):
 
     def __init__(self, **kwargs):
         self.sm_stack = []
+        self.colours = ["Red", "Pink", "Purple", "DeepPurple", "Indigo",
+    "Blue", "LightBlue", "Cyan", "Teal", "Green",
+    "LightGreen", "Lime", "Yellow", "Amber", "Orange",
+    "DeepOrange", "Brown", "Gray", "BlueGray"]
+        self.suits = ["cards-spade","cards-diamond","cards-heart","cards-clubs"]
         super().__init__(**kwargs)
     
     def build(self):
@@ -85,6 +129,9 @@ class GoFishApp(MDApp):
         sm.current = "Menu"
         return sm
     
+    def get_widget(self, widget, screen):
+        return self.root.get_screen(screen).ids[widget]
+    
     def back(self): #Back button
         sm = self.root
         if self.sm_stack[0] == sm.current:
@@ -114,7 +161,13 @@ class GoFishApp(MDApp):
         pass
 
     def on_start(self):
-        
+        grid = self.get_widget("grid","Settings")
+        for colour in self.colours:
+            int = random.randint(0,3)
+            card = Playing_Card(self.suits[int],"")
+            card.colour = self.theme_cls.primary_palette[colour][500]
+            card.change_colour()
+            grid.add_widget(card)
         return super().on_start()
         
 #Running App
