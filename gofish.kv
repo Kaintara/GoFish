@@ -3,11 +3,31 @@
 <MainMenu>:
     md_bg_color: self.theme_cls.surfaceColor
     MDFloatLayout:
+        MDCard:
+            size_hint: None, None
+            size: "64dp", "89dp"
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            MDRelativeLayout:
+                MDIconButton:
+                    theme_icon_color: "Custom"
+                    icon: "cards-spade"
+                    size_hint: None, None
+                    size: "50dp", "50dp"
+                    theme_font_size: "Custom"
+                    font_size: "50sp"
+                    pos_hint: {"center_x":0.5, "center_y":0.5}
+                MDLabel:
+                    text: "J"
+                    pos_hint: {"center_x":0, "center_y":1}
+                MDLabel:
+                    text: "J"
+                    pos_hint: {"center_x":1, "center_y":0}
+
         Image: #UI image
             source: "Icon.png"
             pos_hint: {"center_x": 0.5, "center_y": 0.8}
             size_hint: None, None
-            size: dp(250), dp(250)
+            size: "250dp", "250dp"
             allow_stretch: False
             keep_ratio: True
         MDLabel: #Title
@@ -71,7 +91,7 @@
             icon: "arrow-left"
             on_release: 
                 app.back()
-        MDIconButton: #Settings Button
+        MDIconButton: #Settings Button\
             pos_hint: {"center_x":0.95, "center_y": 0.95}
             size: dp(48), dp(48)
             icon: "menu"
@@ -82,15 +102,26 @@
 <Settings>:
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
-        MDIconButton:
+        MDScrollView:
+            pos_hint: {"center_x":0.5, "top": 0.7}
+            MDGridLayout:
+                md_bg_color: app.theme_cls.surfaceColor
+                id: grid
+                cols: 4
+                adpative_height: True
+                size_hint_y: None
+                spacing: dp(12)
+        MDIconButton: #Change Theme Button
             name: "light"
             style: "tonal"
             icon: "white-balance-sunny"
+            pos_hint: {"center_x":0.5, "top": 0.1}
             on_release: 
                 app.switch_icon(self)
                 app.theme_cls.switch_theme()
         MDIconButton: #Back Button
-            pos_hint: {"left":0.98, "top": 0.98}
+            pos_hint: {"right":0.98, "top": 0.98}
             size: dp(48), dp(48)
             icon: "backburger"
             on_release: app.back()
+

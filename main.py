@@ -110,9 +110,12 @@ class GoFishApp(MDApp):
             widget.name = "light"
             widget.icon = "white-balance-sunny"
         
-
     def change_theme(self,colour):
         pass
+
+    def on_start(self):
+        
+        return super().on_start()
         
 #Running App
 if __name__ == "__main__":
