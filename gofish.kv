@@ -99,20 +99,24 @@
 <Themes>:
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
-        MDLabel:
-            text: "Card Themes!"
-            pos_hint: {"center_x":0.05, "center_y": 0.95}
         MDScrollView: #Themes
             do_scroll_x: False
             do_scroll_y: True
-            pos_hint: {"center_x":0.5, "top": 0.8}
-            size_hint: 1, 0.9
+            pos_hint: {"center_x":0.5, "top": 0.95}
+            size_hint: 1, 1
             MDBoxLayout:
                 orientation: "vertical"
                 size_hint_y: None
                 adaptive_height: True
-                padding: [dp(self.width%64), dp(50), dp(50), dp(0)]
+                padding: [dp(self.width%64), dp(50), dp(50), dp(50)]
                 spacing: dp(12)
+                MDLabel:
+                    text: "Card Themes!"
+                    width: self.parent.width
+                    height: self.parent.height*0.3
+                    font_style: "cataway"
+                    role: "large"
+                    pos_hint: {"center_x":0.5, "center_y": 0.8}
                 MDGridLayout:
                     pos_hint: {"center_x":0.5}
                     md_bg_color: app.theme_cls.surfaceColor
@@ -121,7 +125,7 @@
                     adaptive_height: True
                     size_hint_y: None
                     spacing: dp(12)
-                    padding: [dp(self.width%64), dp(20), dp(20), dp(0)]
+                    padding: [dp(self.width%64), dp(20), dp(20), dp(20)]
                     on_size:
                         self.cols = 1 if int((self.width / 64) -2) <= 0 else (int((self.width / 64) -1))
         MDIconButton: #Back button
@@ -130,18 +134,11 @@
             icon: "arrow-left"
             on_release: 
                 app.back()
-        MDIconButton: #Settings Button
-            pos_hint: {"center_x":0.95, "center_y": 0.95}
-            size: dp(48), dp(48)
-            icon: "menu"
-            on_release: 
-                app.sm_stacky("Themes")
-                root.manager.current = "Settings"
         MDIconButton: #Change Theme Button
             name: "light"
             style: "tonal"
             icon: "white-balance-sunny"
-            pos_hint: {"center_x":0.85, "center_y": 0.95}
+            pos_hint: {"center_x":0.95, "center_y": 0.95}
             on_release: 
                 app.switch_icon(self)
                 app.theme_cls.switch_theme()
