@@ -1,12 +1,16 @@
 #Imports
 
 import random
+from Game import Game
+g = Game(2)
 
 #Kivy
 from kivy.core.window import Window
 from kivy.core.text import LabelBase
 from kivy.metrics import sp
+from kivy.metrics import dp
 from kivy.animation import Animation
+from kivy.graphics import PushMatrix, PopMatrix, Rotate, Scale, Translate
 
 
 #KivyMD
@@ -18,6 +22,7 @@ from kivymd.uix.behaviors import RotateBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.card import MDCard
 from kivymd.uix.relativelayout import RelativeLayout
+from kivymd.uix.label import MDLabel
 
 
 #Custom Buttons/Cards
@@ -60,19 +65,51 @@ class Theme_Playing_Card(MDCard):
         )
         self.layout.add_widget(self.icon)
 
+class Card_Label(MDLabel):
+     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        with self.canvas.before:
+            PushMatrix()
+            self.rotate = Rotate(angle=180, origin=self.center)
+        with self.canvas.after:
+            PopMatrix()
+            
 class Playing_Card(MDCard):
-    def __init__(self,suit="",rank="",**kwargs):
+    def __init__(self,suit_rank,**kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None,None)
         self.size = ("64dp", "89dp")
         self.pos_hint = {"center_x": 0.5, "center_y": 0.5}
-        self.suit = suit
+        self.suit = suit_rank[0]
         app = MDApp.get_running_app()
         if self.suit == "cards-diamond" or self.suit == "cards-heart":
             self.colour = app.theme_cls.inversePrimaryColor
         else:
             self.colour = app.theme_cls.primaryColor
-        self.layout = RelativeLayout()
+        self.layout = RelativeLayout(
+            size = ("64dp", "89dp")
+        )
+        self.up_text = MDLabel(
+            text = suit_rank[1],
+            font_style= "cataway",
+            role= "small",
+            halign= 'left',
+            pos_hint= {"top":1, "center_x":0.2},
+            theme_font_size= "Custom",
+            font_size= dp(30),
+            adaptive_size= True
+        )
+        self.down_text = Card_Label(
+            pos_hint= {"top":1.1, "center_x":0.8},
+            text= suit_rank[1],
+            font_style= "cataway",
+            role= "small",
+            halign= "right",
+            theme_font_size= "Custom",
+            font_size= dp(30),
+            adaptive_size= True
+        )
+
         self.icon = MDButtonIcon(
             icon = self.suit,
             size_hint = (None,None),
@@ -84,19 +121,10 @@ class Playing_Card(MDCard):
             on_release = lambda x:app.change_theme(self.colour)
         )
         self.layout.add_widget(self.icon)
+        self.layout.add_widget(self.up_text)
+        self.layout.add_widget(self.down_text)
         self.add_widget(self.layout)
-    def change_colour(self):
-        self.layout.remove_widget(self.icon)
-        self.icon = MDButtonIcon(
-            icon = self.suit,
-            size_hint = (None,None),
-            theme_font_size = "Custom",
-            font_size = "50sp",
-            theme_icon_color= "Custom",
-            icon_color = self.colour, 
-            pos_hint = {"center_x":0.5, "center_y":0.5}
-        )
-        self.layout.add_widget(self.icon)
+
         
 
 #Screens
@@ -358,6 +386,25 @@ class GoFishApp(MDApp):
             card.change_colour()
             grid.add_widget(card)
         return super().on_start()
+    
+    def card_type(self,card):
+        if card[1] == "S":
+            suit = "cards-spade"
+        elif card[1] == "D":
+            suit = "cards-diamond"
+        elif card[1] == "C":
+            suit = "cards-club"
+        elif card[1] == "H":
+            suit = "cards-heart"
+        if card[0] == "1":
+            rank = "10"
+        else:
+            rank = card[0]
+        return (suit,rank)
+    
+    def output_cards(self):
+        widget = self.get_widget("test","InGame")
+        widget.add_widget(Playing_Card(self.card_type("AH")))
         
 #Running App
 if __name__ == "__main__":
