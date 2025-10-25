@@ -266,10 +266,52 @@ def two_level_mcts(root_state,root_player,game_env,iterations):
     else:
         return auto
     
+def three_level_mcts(root_state,root_player,game_env,iterations):
+    #auto = game_env.auto_move(root_state)
+    #if not auto:
+        det_root = game_env.determinization(root_state)
+        root_node = Node(det_root, parent=None, move_from_parent=None)
+        root_node.untried_moves = game_env.get_legal_moves(root_node.state)
+        for move in root_node.untried_moves:
+            first_child_state = game_env.apply_move(det_root, move)
+            first_child_node = Node(first_child_state, root_node, move)
+            root_node.children.append(first_child_node)
+            first_child_node.untried_moves = game_env.get_legal_moves(first_child_state)
+            for sec_move in first_child_node.untried_moves:
+                sec_child_state = game_env.apply_move(first_child_state, sec_move)
+                sec_child_node = Node(sec_child_state, first_child_node, sec_move)
+                first_child_node.children.append(sec_child_node)
+                third_moves = game_env.get_legal_moves(sec_child_state)
+                for third_move in third_moves:
+                    thi_child_state = game_env.apply_move(sec_child_state,third_move)
+                    thi_child_node = Node(thi_child_state,sec_child_node,third_move)
+                    sec_child_node.children.append(thi_child_node)
 
+        for _ in range(iterations):
+            for first_child in root_node.children:
+                for sec_child in first_child.children:
+                    if not sec_child.children:
+                        continue
+                    child = random.choice(sec_child.children)
+                    sim_state = copy.deepcopy(child.state)
+                    final_state = child.simulations(sim_state,game_env)
+                    reward = game_env.get_reward(final_state, root_player)
+                    child.visits += 1
+                    child.value += reward
 
+        for first_child in root_node.children:
+            for sec_child in first_child.children:
+                if sec_child.children:
+                    sec_child.visits = sum(child.visits for child in sec_child.children)
+                    sec_child.value = sum(child.value for child in sec_child.children)
+
+                if first_child.children:
+                    first_child.visits = sum(child.visits for child in first_child.children)
+                    first_child.value = sum(child.value for child in first_child.children)
+        return (root_node.best_child(1.4)).move_from_parent
 env = GameEnvironment(4)
 
-print(two_level_mcts(test_state,3,env,3))
+print(three_level_mcts(test_state,3,env,2))
+
 
 
