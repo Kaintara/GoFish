@@ -93,7 +93,7 @@ class Game:
     def next_vaild_player(game,playernum):
         for i in range(1, game.amount_of_players + 1):
             nvp = (playernum + i) % game.amount_of_players
-            if game.hands[nvp] or game.shuffled_deck:
+            if game.hands[nvp] or (not game.hands[nvp] and game.shuffled_deck):
                 return nvp
         return None
 
@@ -120,21 +120,27 @@ class Game:
 
     def player_turn(game,playernum):
         moves = game.get_valid_moves(playernum)
+        print(moves)
         if not moves:
             if game.shuffled_deck:
                 game.draw_card(playernum)
-            nvp = game.next_vaild_player(playernum)
-            if nvp is not None:
-                game.turn = nvp
+            game.turn = game.next_vaild_player(playernum)
             return
-        i = random.randint(0,len(moves)-1)
-        game.history.append(moves[i])
-        game.Update_GameState()
-        if playernum == 1:
+        if len(moves) == 1:
+            move = moves[0]
+        elif playernum == 3:
             move = game.expert_call()
-            print("BOT")
+        elif playernum == 2:
+            move = game.beginner_call()
+        elif playernum == 1:
+            move = game.beginner_call()
+        elif playernum == 0:
+            move = game.beginner_call()
         else:
+            i = random.randint(0,len(moves)-1)
             move = moves[i]
+        game.history.append(move)
+        game.Update_GameState()
         target_player = int(move[0][6:]) - 1
         card = move[1]
         Correct = False
@@ -147,30 +153,33 @@ class Game:
                 game.hands[playernum].append(x)
                 game.hands[target_player].remove(x)
         if not Correct:
-            nvp = None
             if game.shuffled_deck:
                 game.draw_card(playernum)
-                nvp = game.next_vaild_player(playernum)
+                game.turn = game.next_vaild_player(playernum)
             if any(len(hand) == 0 for hand in game.hands):
-                nvp = game.next_vaild_player(playernum)
-            if nvp is not None:
-                game.turn = nvp
+                game.turn = game.next_vaild_player(playernum)
+
+    def check_end(game):
+        for i in range(game.amount_of_players):
+            if game.get_valid_moves(i) or game.shuffle_deck:
+                game.turn = i
+                return
             else:
-                game.turn = None
+                return False
 
     def game_loop(game):
         game.shuffle_cards()
         game.distribute_cards()
         print(game.state)
         game.turn = random.randint(0,game.amount_of_players - 1)
-        while not game.is_game_over() and game.turn is not None:
+        while not game.is_game_over():
             game.Update_GameState()
             print(game.state)
             game.check_for_sets()
             game.player_turn(game.turn)
-            input()
-        for x in game.sets:
-            print(x)
+        print("Game over! Sets collected:")
+        for i, s in enumerate(game.sets):
+            print(f"Player {i+1}: {s}")
 
     def beginner_call(game):
         return one_level_mcts(game.state,game.turn,game.env,2)
@@ -207,7 +216,7 @@ class Game:
         if move:
             return move
         else:
-            return three_level_mcts(game.state,game.turn,game.env,1)
+            return three_level_mcts(game.state,game.turn,game.env,3)
 
 GoFish = Game(4)
 GoFish.game_loop()

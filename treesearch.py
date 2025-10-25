@@ -97,7 +97,7 @@ class GameEnvironment:
         for i in history:
             if i[0] != Ai:
                 if len(hands[i[0]]) != len(Determined_hands[i[0]]):
-                    while len(Determined_hands[i[0]]) < len(hands[i[0]]):
+                    while len(Determined_hands[i[0]]) < len(hands[i[0]]) and len(deck) > 1:
                         card = deck[random.randint(0,len(deck)-1)]
                         Determined_hands[i[0]].append(card)
                         deck.remove(card)
@@ -173,7 +173,10 @@ class GameEnvironment:
             ranks = [card[:-1] for card in hand]
             counts = Counter(ranks)
             near_sets = [rank for rank, count in counts.items() if count == 3]
-        return len(state["sets"][f'player{index+1}']) + int(len(near_sets)*0.5)
+            if near_sets:
+                return len(state["sets"][f'player{index+1}']) + int(len(near_sets)*0.5)
+            else:
+                return len(state["sets"][f'player{index+1}'])
 
 
 
@@ -194,11 +197,15 @@ class Node:
     def best_child(self,c_param=1.41):
         choices = []
         for child in self.children:
+            if not self.children:
+                return None
             if child.visits == 0:
                 UCT = float('inf')
             else:
                 UCT = (child.value / child.visits) + (c_param * math.sqrt(2 * math.log(self.visits + 1)/child.visits))
             choices.append(UCT)
+        if not choices:
+            return None
         return self.children[choices.index(max(choices))]
     
     def simulations(self,state,game_env):
@@ -224,11 +231,17 @@ def one_level_mcts(root_state,root_player,game_env,iterations):
             child_node.untried_moves = []
         for _ in range(iterations):
                 child = random.choice(root_node.children)
+                if not child:
+                    continue
                 sim_state = copy.deepcopy(child.state)
                 final_state = child.simulations(sim_state,game_env)
                 reward = game_env.get_reward(final_state, root_player)
+                if not reward:
+                    child.value += 0
+                else:
+                    child.value += reward
                 child.visits += 1
-                child.value += reward
+                
         best_child = max(root_node.children, key=lambda c: c.value / c.visits if c.visits > 0 else 0)
         return (root_node.best_child(1.4)).move_from_parent
 
@@ -248,12 +261,17 @@ def two_level_mcts(root_state,root_player,game_env,iterations):
 
         for _ in range(iterations):
             for first_child in root_node.children:
+                if not first_child:
+                        continue
                 child = random.choice(first_child.children)
                 sim_state = copy.deepcopy(child.state)
                 final_state = child.simulations(sim_state,game_env)
                 reward = game_env.get_reward(final_state, root_player)
                 child.visits += 1
-                child.value += reward
+                if not reward:
+                    child.value += 0
+                else:
+                    child.value += reward
         
         for first_child in root_node.children:
             if first_child.children:
@@ -290,7 +308,10 @@ def three_level_mcts(root_state,root_player,game_env,iterations):
                     final_state = child.simulations(sim_state,game_env)
                     reward = game_env.get_reward(final_state, root_player)
                     child.visits += 1
-                    child.value += reward
+                    if not reward:
+                        child.value += 0
+                    else:
+                        child.value += reward
 
         for first_child in root_node.children:
             for sec_child in first_child.children:
