@@ -76,6 +76,9 @@ class Settings(MDScreen):
 class Rules(MDScreen):
     pass
 
+class Themes(MDScreen):
+    pass
+
 
 #App Bulid
 class GoFishApp(MDApp):
@@ -123,6 +126,7 @@ class GoFishApp(MDApp):
         sm.add_widget(InGame(name="InGame"))
         sm.add_widget(Rules(name="Rules"))
         sm.add_widget(Settings(name="Settings"))
+        sm.add_widget(Themes(name="Themes"))
         sm.current = "Menu"
         return sm
     
@@ -158,7 +162,7 @@ class GoFishApp(MDApp):
         self.theme_cls.primary_palette = colour
 
     def on_start(self):
-        grid = self.get_widget("grid","Settings")
+        grid = self.get_widget("grid","Themes")
         for colour in self.colours:
             int = random.randint(0,3)
             card = Playing_Card(self.suits[int],"")
