@@ -3,11 +3,12 @@
 <MainMenu>:
     md_bg_color: self.theme_cls.surfaceColor
     MDFloatLayout:
-   
         MDCard:
             size_hint: None, None
             size: "64dp", "89dp"
             pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            theme_bg_color: "Custom"
+            md_bg_color: app.theme_cls.primaryContainerColor
             MDRelativeLayout:
                 MDIconButton:
                     theme_icon_color: "Custom"
@@ -100,8 +101,11 @@
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
         MDScrollView:
-            pos_hint: {"center_x":0.5, "top": 0.7}
+            adpative_height: True
+            size_hint_y: None
+            pos_hint: {"x":0.5, "top": 0.7}
             MDGridLayout:
+                pos_hint: {"x":0.5, "top": 0.7}
                 md_bg_color: app.theme_cls.surfaceColor
                 id: grid
                 cols: 4

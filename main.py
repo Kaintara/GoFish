@@ -20,7 +20,6 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.relativelayout import RelativeLayout
 
 
-
 #Custom Buttons/Cards
 class Playing_Card(MDCard):
     def __init__(self,suit="",rank="",**kwargs):
@@ -42,7 +41,8 @@ class Playing_Card(MDCard):
             font_size = "50sp",
             theme_icon_color= "Custom",
             icon_color = self.colour, 
-            pos_hint = {"center_x":0.5, "center_y":0.5}
+            pos_hint = {"center_x":0.5, "center_y":0.5},
+            on_release = lambda x:app.change_theme(self.colour)
         )
         self.layout.add_widget(self.icon)
         self.add_widget(self.layout)
@@ -82,11 +82,8 @@ class GoFishApp(MDApp):
 
     def __init__(self, **kwargs):
         self.sm_stack = []
-        self.colours = ["Red", "Pink", "Purple", "DeepPurple", "Indigo",
-    "Blue", "LightBlue", "Cyan", "Teal", "Green",
-    "LightGreen", "Lime", "Yellow", "Amber", "Orange",
-    "DeepOrange", "Brown", "Gray", "BlueGray"]
-        self.suits = ["cards-spade","cards-diamond","cards-heart","cards-clubs"]
+        self.colours = ['Aliceblue', 'Antiquewhite', 'Aqua', 'Aquamarine', 'Azure', 'Beige', 'Bisque', 'Black', 'Blanchedalmond', 'Blue', 'Blueviolet', 'Brown', 'Burlywood', 'Cadetblue', 'Chartreuse', 'Chocolate', 'Coral', 'Cornflowerblue', 'Cornsilk', 'Crimson', 'Cyan', 'Darkblue', 'Darkcyan', 'Darkgoldenrod', 'Darkgray', 'Darkgrey', 'Darkgreen', 'Darkkhaki', 'Darkmagenta', 'Darkolivegreen', 'Darkorange', 'Darkorchid', 'Darkred', 'Darksalmon', 'Darkseagreen', 'Darkslateblue', 'Darkslategray', 'Darkslategrey', 'Darkturquoise', 'Darkviolet', 'Deeppink', 'Deepskyblue', 'Dimgray', 'Dimgrey', 'Dodgerblue', 'Firebrick', 'Floralwhite', 'Forestgreen', 'Fuchsia', 'Gainsboro', 'Ghostwhite', 'Gold', 'Goldenrod', 'Gray', 'Grey', 'Green', 'Greenyellow', 'Honeydew', 'Hotpink', 'Indianred', 'Indigo', 'Ivory', 'Khaki', 'Lavender', 'Lavenderblush', 'Lawngreen', 'Lemonchiffon', 'Lightblue', 'Lightcoral', 'Lightcyan', 'Lightgoldenrodyellow', 'Lightgreen', 'Lightgray', 'Lightgrey', 'Lightpink', 'Lightsalmon', 'Lightseagreen', 'Lightskyblue', 'Lightslategray', 'Lightslategrey', 'Lightsteelblue', 'Lightyellow', 'Lime', 'Limegreen', 'Linen', 'Magenta', 'Maroon', 'Mediumaquamarine', 'Mediumblue', 'Mediumorchid', 'Mediumpurple', 'Mediumseagreen', 'Mediumslateblue', 'Mediumspringgreen', 'Mediumturquoise', 'Mediumvioletred', 'Midnightblue', 'Mintcream', 'Mistyrose', 'Moccasin', 'Navajowhite', 'Navy', 'Oldlace', 'Olive', 'Olivedrab', 'Orange', 'Orangered', 'Orchid', 'Palegoldenrod', 'Palegreen', 'Paleturquoise', 'Palevioletred', 'Papayawhip', 'Peachpuff', 'Peru', 'Pink', 'Plum', 'Powderblue', 'Purple', 'Red', 'Rosybrown', 'Royalblue', 'Saddlebrown', 'Salmon', 'Sandybrown', 'Seagreen', 'Seashell', 'Sienna', 'Silver', 'Skyblue', 'Slateblue', 'Slategray', 'Slategrey', 'Snow', 'Springgreen', 'Steelblue', 'Tan', 'Teal', 'Thistle', 'Tomato', 'Turquoise', 'Violet', 'Wheat', 'White', 'Whitesmoke', 'Yellow', 'Yellowgreen']
+        self.suits = ["cards-spade","cards-diamond","cards-heart","cards-club"]
         super().__init__(**kwargs)
     
     def build(self):
@@ -158,14 +155,15 @@ class GoFishApp(MDApp):
             widget.icon = "white-balance-sunny"
         
     def change_theme(self,colour):
-        pass
+        self.theme_cls.primary_palette = colour
 
     def on_start(self):
         grid = self.get_widget("grid","Settings")
         for colour in self.colours:
             int = random.randint(0,3)
             card = Playing_Card(self.suits[int],"")
-            card.colour = self.theme_cls.primary_palette[colour][500]
+            #card.md_bg_color = colour.lower() Needs to be fixed!!!
+            card.colour = colour.lower()
             card.change_colour()
             grid.add_widget(card)
         return super().on_start()
