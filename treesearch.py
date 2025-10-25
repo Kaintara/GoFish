@@ -34,9 +34,14 @@ class GameEnvironment:
         game.amount_of_players = amount_of_players
 
     def auto_move(game,state): #If the Ai knows a player has a card they have they will automatically ask them for it.
-        history = state["history"]
+        s = copy.deepcopy(state)
+        for x in s["history"]:
+            if x[2] == 'draw':
+                s['history'].remove(x)
+        history = s["history"][-(game.amount_of_players *2):]
+        print(history)
         Ai = state["current_player"][1]
-        known_hands = {k: [] for k, a in state["hands"].items() if k != Ai}
+        known_hands = {k: [] for k, a in s["hands"].items() if k != Ai}
         auto_moves = []
 
         for i in history:
@@ -45,14 +50,14 @@ class GameEnvironment:
             elif i[2] == 'ask' and i[0] != Ai:
                 known_hands[i[0]].append(i[1])
 
-        for card in state["hands"][Ai]:
+        for card in s["hands"][Ai]:
             rank = card[0]
             for player, known_cards in known_hands.items():
                 if any(c[0] == rank for c in known_cards):
                     auto_moves.append((player, rank, 'ask'))
 
         for move in auto_moves:
-            if move in sorted(history,reverse=True):
+            if move in history:
                 continue
             else:
                 return move
@@ -217,25 +222,54 @@ def one_level_mcts(root_state,root_player,game_env,iterations):
             root_node.children.append(child_node)
             child_node.untried_moves = []
         for _ in range(iterations):
-            for child in root_node.children:
+                child = random.choice(root_node.children)
                 sim_state = copy.deepcopy(child.state)
                 final_state = child.simulations(sim_state,game_env)
                 reward = game_env.get_reward(final_state, root_player)
                 child.visits += 1
                 child.value += reward
         best_child = max(root_node.children, key=lambda c: c.value / c.visits if c.visits > 0 else 0)
-        return best_child.move_from_parent
+        return (root_node.best_child(1.4)).move_from_parent
     else:
         return auto
 
 def two_level_mcts(root_state,root_player,game_env,iterations):
-    det_root = game_env.determinization(root_state)
-    root_node = Node(det_root, parent=None, move_from_parent=None)
-    root_node.untried_moves = game_env.get_legal_moves(root_node.state)
-    #for root_node
+    auto = game_env.auto_move(root_state)
+    if not auto:
+        det_root = game_env.determinization(root_state)
+        root_node = Node(det_root, parent=None, move_from_parent=None)
+        root_node.untried_moves = game_env.get_legal_moves(root_node.state)
+        for move in root_node.untried_moves:
+            first_child_state = game_env.apply_move(det_root, move)
+            first_child_node = Node(first_child_state, root_node, move)
+            root_node.children.append(first_child_node)
+            sec_moves = game_env.get_legal_moves(first_child_state)
+            for sec_move in sec_moves:
+                sec_child_state = game_env.apply_move(first_child_state, sec_move)
+                sec_child_node = Node(sec_child_state, first_child_node, sec_move)
+                first_child_node.children.append(sec_child_node)
+
+        for _ in range(iterations):
+            for first_child in root_node.children:
+                child = random.choice(first_child.children)
+                sim_state = copy.deepcopy(child.state)
+                final_state = child.simulations(sim_state,game_env)
+                reward = game_env.get_reward(final_state, root_player)
+                child.visits += 1
+                child.value += reward
+        
+        for first_child in root_node.children:
+            if first_child.children:
+                first_child.visits = sum(child.visits for child in first_child.children)
+                first_child.value = sum(child.value for child in first_child.children)
+        return (root_node.best_child(1.4)).move_from_parent
+    else:
+        return auto
+    
+
 
 env = GameEnvironment(4)
 
-print(one_level_mcts(test_state,3,env,20))
+print(two_level_mcts(test_state,3,env,3))
 
 
