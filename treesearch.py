@@ -3,6 +3,7 @@ from collections import Counter
 import math
 import copy
 
+'''
 test_state = {'hands': 
          {'player1': 
           ['JS', '7S', '2H', '3C', '8S', '4S', 'JD', 'AC'], 
@@ -28,6 +29,7 @@ test_state = {'hands':
                       ('player4', '6D', 'took', 'player3'), 
                       ('player1', '5', 'ask'), 
                       ('player4', '5D', 'took', 'player1')]}
+'''
 
 class GameEnvironment:
     def __init__(game, amount_of_players):
@@ -63,10 +65,6 @@ class GameEnvironment:
                 return move
         return None
 
-    def auto_move2(game,state): #If the Ai just asked player for a card they have and was successful, they will ask another player for the same card if they haven't asked that already
-        pass
-
-
     def determinization(game,state): #Function will calculate what cards players have and then assume the rest for the first part of the ISMCTS
         copied = copy.deepcopy(state)
         Ai = copied["current_player"][1]
@@ -83,14 +81,19 @@ class GameEnvironment:
 
         for i in history:
             if i[2] == 'took' and i[0] != Ai:
-                Determined_hands[i[0]].append(i[1])
-                deck.remove(i[1])
+                try:
+                    deck.remove(i[1])
+                    Determined_hands[i[0]].append(i[1])
+                except:
+                    continue
+                
         for i in history:
             if i[2] == 'ask' and i[0] != Ai:
                 lst = [x for x in deck if x.startswith(i[1])]
-                card = lst[random.randint(0,len(lst)-1)]
-                Determined_hands[i[0]].append(card)
-                deck.remove(card)
+                if lst:
+                    card = lst[random.randint(0,len(lst)-1)]
+                    Determined_hands[i[0]].append(card)
+                    deck.remove(card)
         for i in history:
             if i[0] != Ai:
                 if len(hands[i[0]]) != len(Determined_hands[i[0]]):
@@ -211,8 +214,6 @@ class Node:
 
 
 def one_level_mcts(root_state,root_player,game_env,iterations):
-    auto = game_env.auto_move(root_state)
-    if not auto:
         det_root = game_env.determinization(root_state)
         root_node = Node(det_root, parent=None, move_from_parent=None)
         root_node.untried_moves = game_env.get_legal_moves(root_node.state)
@@ -230,12 +231,8 @@ def one_level_mcts(root_state,root_player,game_env,iterations):
                 child.value += reward
         best_child = max(root_node.children, key=lambda c: c.value / c.visits if c.visits > 0 else 0)
         return (root_node.best_child(1.4)).move_from_parent
-    else:
-        return auto
 
 def two_level_mcts(root_state,root_player,game_env,iterations):
-    auto = game_env.auto_move(root_state)
-    if not auto:
         det_root = game_env.determinization(root_state)
         root_node = Node(det_root, parent=None, move_from_parent=None)
         root_node.untried_moves = game_env.get_legal_moves(root_node.state)
@@ -263,12 +260,8 @@ def two_level_mcts(root_state,root_player,game_env,iterations):
                 first_child.visits = sum(child.visits for child in first_child.children)
                 first_child.value = sum(child.value for child in first_child.children)
         return (root_node.best_child(1.4)).move_from_parent
-    else:
-        return auto
     
 def three_level_mcts(root_state,root_player,game_env,iterations):
-    #auto = game_env.auto_move(root_state)
-    #if not auto:
         det_root = game_env.determinization(root_state)
         root_node = Node(det_root, parent=None, move_from_parent=None)
         root_node.untried_moves = game_env.get_legal_moves(root_node.state)
@@ -309,9 +302,5 @@ def three_level_mcts(root_state,root_player,game_env,iterations):
                     first_child.visits = sum(child.visits for child in first_child.children)
                     first_child.value = sum(child.value for child in first_child.children)
         return (root_node.best_child(1.4)).move_from_parent
-env = GameEnvironment(4)
-
-print(three_level_mcts(test_state,3,env,2))
-
 
 

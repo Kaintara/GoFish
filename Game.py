@@ -1,6 +1,6 @@
 import random
-import fnmatch
 from collections import Counter
+from treesearch import * 
 
 class Game:
     def __init__(game,amount_of_players):
@@ -33,6 +33,7 @@ class Game:
             "current_player": game.turn,
             "history": [],
         }
+        game.env = GameEnvironment(amount_of_players)
 
         
     def Update_GameState(game):
@@ -129,7 +130,11 @@ class Game:
         i = random.randint(0,len(moves)-1)
         game.history.append(moves[i])
         game.Update_GameState()
-        move = moves[i]
+        if playernum == 1:
+            move = game.expert_call()
+            print("BOT")
+        else:
+            move = moves[i]
         target_player = int(move[0][6:]) - 1
         card = move[1]
         Correct = False
@@ -142,8 +147,11 @@ class Game:
                 game.hands[playernum].append(x)
                 game.hands[target_player].remove(x)
         if not Correct:
+            nvp = None
             if game.shuffled_deck:
                 game.draw_card(playernum)
+                nvp = game.next_vaild_player(playernum)
+            if any(len(hand) == 0 for hand in game.hands):
                 nvp = game.next_vaild_player(playernum)
             if nvp is not None:
                 game.turn = nvp
@@ -153,6 +161,7 @@ class Game:
     def game_loop(game):
         game.shuffle_cards()
         game.distribute_cards()
+        print(game.state)
         game.turn = random.randint(0,game.amount_of_players - 1)
         while not game.is_game_over() and game.turn is not None:
             game.Update_GameState()
@@ -163,8 +172,42 @@ class Game:
         for x in game.sets:
             print(x)
 
+    def beginner_call(game):
+        return one_level_mcts(game.state,game.turn,game.env,2)
+
+    def easy_call(game):
+        if random.randint(0,3) == 4:
+            move = game.env.auto_move(game.state)
+            if move:
+                return move
+            else:
+                return one_level_mcts(game.state,game.turn,game.env,4)
+        else:
+            return one_level_mcts(game.state,game.turn,game.env,4)
+
+    def medium_call(game):
+        if random.randint(0,1) == 1:
+            move = game.env.auto_move(game.state)
+            if move:
+                return move
+            else:
+                return two_level_mcts(game.state,game.turn,game.env,5)
+        else:
+            return two_level_mcts(game.state,game.turn,game.env,5)
+
+    def hard_call(game):
+        move = game.env.auto_move(game.state)
+        if move:
+            return move
+        else:
+            return two_level_mcts(game.state,game.turn,game.env,5)
+
+    def expert_call(game):
+        move = game.env.auto_move(game.state)
+        if move:
+            return move
+        else:
+            return three_level_mcts(game.state,game.turn,game.env,1)
+
 GoFish = Game(4)
-GoFish.shuffle_cards()
-GoFish.distribute_cards()
-GoFish.sort_cards()
-#GoFish.game_loop()
+GoFish.game_loop()
