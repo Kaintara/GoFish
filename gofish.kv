@@ -10,6 +10,32 @@
             theme_bg_color: "Custom"
             md_bg_color: app.theme_cls.primaryContainerColor
             MDRelativeLayout:
+                size: "64dp", "89dp"
+                MDLabel:
+                    text: "J"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: 'left'
+                    pos_hint: {"top":0.9, "center_x":0.2}
+                    theme_font_size: "Custom"
+                    font_size: dp(30)
+                    adaptive_size: True
+                MDLabel:
+                    pos_hint: {"top":0.4, "center_x":0.8}
+                    text: "J"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: "right"
+                    theme_font_size: "Custom"
+                    font_size: dp(30)
+                    adaptive_size: True
+                    canvas.before:
+                        PushMatrix
+                        Rotate:
+                            angle: 180
+                            origin: self.center
+                    canvas.after:
+                        PopMatrix
                 MDIconButton:
                     theme_icon_color: "Custom"
                     icon_color: app.theme_cls.primaryColor
@@ -19,7 +45,6 @@
                     theme_font_size: "Custom"
                     font_size: "50sp"
                     pos_hint: {"center_x":0.5, "center_y":0.5}
-
 
         Image: #UI image
             source: "Icon.png"
@@ -80,8 +105,39 @@
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
         MDScrollView:
-            MDLabel:
-                text:"Hello!"
+            do_scroll_x: False
+            do_scroll_y: True
+            MDBoxLayout:
+                orientation: 'vertical'
+                padding: "20dp"
+                spacing: "20dp"
+                height: self.minimum_height
+                size_hint_y: None
+                MDLabel:
+                    text: "How to Play!"
+                    font_style: "cataway"
+                    role: "large"
+                    halign: 'center'
+                    valign: "top"
+                    pos_hint: {"top":0.9, "center_x":0.5}
+                    size_hint: None, None
+                    height: self.texture_size[1]
+                    text_size: self.width*10, None
+                MDLabel:
+                    text: "This is Go Fish Mobile! I"
+                    halign: "center"
+                    valign: "top"
+                    markup: True
+                    size_hint_x: 0.8
+                    pos_hint: {"center_x": 0.5}
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    font_style: "cataway"
+                    role: "medium"
+                    theme_font_size: "Custom"
+                    font_size: dp(20)
+                    shorten: False
         MDIconButton: #Back button
             pos_hint: {"center_x":0.05, "center_y": 0.95}
             size: dp(48), dp(48)
