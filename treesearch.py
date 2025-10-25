@@ -33,6 +33,35 @@ class GameEnvironment:
     def __init__(game, amount_of_players):
         game.amount_of_players = amount_of_players
 
+    def auto_move(game,state): #If the Ai knows a player has a card they have they will automatically ask them for it.
+        history = state["history"]
+        Ai = state["current_player"][1]
+        known_hands = {k: [] for k, a in state["hands"].items() if k != Ai}
+        auto_moves = []
+
+        for i in history:
+            if i[2] == 'took' and i[0] != Ai:
+                known_hands[i[0]].append(i[1])
+            elif i[2] == 'ask' and i[0] != Ai:
+                known_hands[i[0]].append(i[1])
+
+        for card in state["hands"][Ai]:
+            rank = card[0]
+            for player, known_cards in known_hands.items():
+                if any(c[0] == rank for c in known_cards):
+                    auto_moves.append((player, rank, 'ask'))
+
+        for move in auto_moves:
+            if move in sorted(history,reverse=True):
+                continue
+            else:
+                return move
+        return None
+
+    def auto_move2(game,state): #If the Ai just asked player for a card they have and was successful, they will ask another player for the same card if they haven't asked that already
+        pass
+
+
     def determinization(game,state): #Function will calculate what cards players have and then assume the rest for the first part of the ISMCTS
         copied = copy.deepcopy(state)
         Ai = copied["current_player"][1]
@@ -82,7 +111,7 @@ class GameEnvironment:
         moves = []
         for card in asks:
             for option in available:
-                    moves.append(('ask', f'player{option+1}', card)) 
+                    moves.append((f'player{option+1}',card,'ask')) 
         return moves
     
     def remove_set(game, rank, hand):
@@ -104,7 +133,7 @@ class GameEnvironment:
         s = copy.deepcopy(state)
         current_index = s["current_player"][0]
         current_name = f"player{current_index + 1}"
-        action, target_player, rank = move
+        target_player, rank, action = move
         history = s["history"]
         history.append(move)
         asked_hand = s["hands"][target_player]
@@ -132,7 +161,11 @@ class GameEnvironment:
         return (not state["deck"]) and all(len(hand) == 0 for hand in state["hands"].values())
     
     def get_reward(game,state,index):
-        return len(state["sets"][f'player{index+1}'])
+        for hand in state["hands"][f'player{index+1}']:
+            ranks = [card[:-1] for card in hand]
+            counts = Counter(ranks)
+            near_sets = [rank for rank, count in counts.items() if count == 3]
+        return len(state["sets"][f'player{index+1}']) + int(len(near_sets)*0.5)
 
 
 
@@ -172,47 +205,37 @@ class Node:
 
 
 
-def mcts(root_state,root_player,game_env,iterations):
+def one_level_mcts(root_state,root_player,game_env,iterations):
+    auto = game_env.auto_move(root_state)
+    if not auto:
+        det_root = game_env.determinization(root_state)
+        root_node = Node(det_root, parent=None, move_from_parent=None)
+        root_node.untried_moves = game_env.get_legal_moves(root_node.state)
+        for move in root_node.untried_moves:
+            child_state = game_env.apply_move(det_root, move)
+            child_node = Node(child_state, root_node, move)
+            root_node.children.append(child_node)
+            child_node.untried_moves = []
+        for _ in range(iterations):
+            for child in root_node.children:
+                sim_state = copy.deepcopy(child.state)
+                final_state = child.simulations(sim_state,game_env)
+                reward = game_env.get_reward(final_state, root_player)
+                child.visits += 1
+                child.value += reward
+        best_child = max(root_node.children, key=lambda c: c.value / c.visits if c.visits > 0 else 0)
+        return best_child.move_from_parent
+    else:
+        return auto
+
+def two_level_mcts(root_state,root_player,game_env,iterations):
     det_root = game_env.determinization(root_state)
     root_node = Node(det_root, parent=None, move_from_parent=None)
     root_node.untried_moves = game_env.get_legal_moves(root_node.state)
-    for move in root_node.untried_moves:
-        child_state = game_env.apply_move(det_root, move)
-        child_node = Node(child_state, root_node, move)
-        root_node.children.append(child_node)
-        child_node.untried_moves = []
-    for _ in range(iterations):
-        for child in root_node.children:
-            sim_state = copy.deepcopy(child.state)
-            final_state = child.simulations(sim_state,game_env)
-            reward = game_env.get_reward(final_state, root_player)
-            child.visits += 1
-            child.value += reward
+    #for root_node
 
-    best_child = max(root_node.children, key=lambda c: c.value / c.visits if c.visits > 0 else 0)
-    return best_child.move_from_parent, root_node.best_child(c_param=1.4).move_from_parent
 env = GameEnvironment(4)
 
+print(one_level_mcts(test_state,3,env,20))
 
-print(mcts(test_state,3,env,10))
-
-
-
-
-'''
-def mcts(root_state,root_player,game_env,iterations=1000,c_param=1.41):
-    root_node = Node(root_state, parent=None, move_from_parent=None)
-    root_node.untried_moves = list(game_env.get_legal_moves(root_node.state))
-
-    for _ in range(iterations):
-        node = root_node
-        while node.tried_all_moves() and not game_env.is_terminal(node.state):
-            node = node.best_child(c_param=c_param)
-        
-        if not game_env.is_terminal(node.state):
-            if node.untried_moves is None:
-                node.untried_moves = list(game_env.get_legal_moves(node.state))
-            if node.untried_moves:
-                move = node.untried_moves.pop(random.randrange(len(node.untried_moves)))
-            '''
 
