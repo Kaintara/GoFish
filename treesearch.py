@@ -39,7 +39,7 @@ class GameEnvironment:
         hands = {k: v for k, v in copied["hands"].items() if k != Ai}
 
         Determined_hands = {k: [] for k, a in copied["hands"].items() if k != Ai}
-        Determined_hands["Ai_hand"] = copied["hands"][Ai]
+        Determined_hands[f"{Ai}"] = copied["hands"][Ai]
 
         deck = copied["deck"][:]
         for x in [c for l,c in copied["hands"].items() if l != Ai]:
@@ -133,8 +133,6 @@ class GameEnvironment:
     
     def get_reward(game,state,index):
         return len(state["sets"][f'player{index+1}'])
-    
-
 
 
 
@@ -150,7 +148,7 @@ class Node:
         self.value = 0.0
 
     def tried_all_moves(self):
-        return self.untried_moves is None and len(self.untried_moves) == 0
+        return self.untried_moves is not None and len(self.untried_moves) == 0
     
     def best_child(self,c_param=1.41):
         choices = []
@@ -158,35 +156,46 @@ class Node:
             if child.visits == 0:
                 UCT = float('inf')
             else:
-                UCT = (child.value / child.visits) + (c_param * math.sqrt(2 * math.log(self.visits)/child.visits))
+                UCT = (child.value / child.visits) + (c_param * math.sqrt(2 * math.log(self.visits + 1)/child.visits))
             choices.append(UCT)
         return self.children[choices.index(max(choices))]
     
     def simulations(self,state,game_env):
         s = copy.deepcopy(state)
-        while not game_env.is_terminal(s):
+        for x in range(5):
             moves = game_env.get_legal_moves(s)
             if not moves:
                 break
             move = random.choice(moves)
-            s = game_env.apply_moves(s,move)
+            s = game_env.apply_move(s,move)
         return s
 
-def mcts(root_state,root_player,game_env,iterations,c_param):
 
+
+def mcts(root_state,root_player,game_env,iterations):
+    det_root = game_env.determinization(root_state)
+    root_node = Node(det_root, parent=None, move_from_parent=None)
+    root_node.untried_moves = game_env.get_legal_moves(root_node.state)
+    for move in root_node.untried_moves:
+        child_state = game_env.apply_move(det_root, move)
+        child_node = Node(child_state, root_node, move)
+        root_node.children.append(child_node)
+        child_node.untried_moves = []
     for _ in range(iterations):
-        det_root = game_env.determinization(root_state)
-        root_node = Node(det_root, parent=None, move_from_parent=None)
-        root_node.untried_moves = list(game_env.get_legal_moves(root_node.state))
-        node = root_node
-        while node.tried_all_moves() and not game_env.is_terminal(node.state):
-            node = node.best_child(c_param=c_param)
-        if not game_env.is_terminal(node.state):
-            if node.untried_moves is None:
-                node.untried_moves = list(game_env.get_legal_moves(node.state))
-            if node.untried_moves:
-                move = node.untried_moves.pop(random.randrange(len(node.untried_moves)))
-                
+        for child in root_node.children:
+            sim_state = copy.deepcopy(child.state)
+            final_state = child.simulations(sim_state,game_env)
+            reward = game_env.get_reward(final_state, root_player)
+            child.visits += 1
+            child.value += reward
+
+    best_child = max(root_node.children, key=lambda c: c.value / c.visits if c.visits > 0 else 0)
+    return best_child.move_from_parent, root_node.best_child(c_param=1.4).move_from_parent
+env = GameEnvironment(4)
+
+
+print(mcts(test_state,3,env,10))
+
 
 
 
@@ -206,13 +215,4 @@ def mcts(root_state,root_player,game_env,iterations=1000,c_param=1.41):
             if node.untried_moves:
                 move = node.untried_moves.pop(random.randrange(len(node.untried_moves)))
             '''
-    
-env = GameEnvironment(4)
 
-best_move, stats = mcts(root_state=test_state,
-                        root_player=0,
-                        game_env=env
-                        iterations=2000,
-                        c_param=1.4)  # or your determinizer
-print("Selected move:", best_move)
-print(stats)
