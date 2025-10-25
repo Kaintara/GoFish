@@ -33,19 +33,19 @@ class GameEnvironment:
     def __init__(game, amount_of_players):
         game.amount_of_players = amount_of_players
 
-    def determinization(self,state): #Function will calculate what cards players have and then assume the rest for the first part of the ISMCTS
+    def determinization(game,state): #Function will calculate what cards players have and then assume the rest for the first part of the ISMCTS
         copied = copy.deepcopy(state)
-        Ai = state["current_player"][1]
-        hands = {k: v for k, v in state["hands"].items() if k != Ai}
+        Ai = copied["current_player"][1]
+        hands = {k: v for k, v in copied["hands"].items() if k != Ai}
 
-        Determined_hands = {k: [] for k, a in state["hands"].items() if k != Ai}
-        Determined_hands["Ai_hand"] = state["hands"][Ai]
+        Determined_hands = {k: [] for k, a in copied["hands"].items() if k != Ai}
+        Determined_hands["Ai_hand"] = copied["hands"][Ai]
 
         deck = copied["deck"][:]
-        for x in [c for l,c in state["hands"].items() if l != Ai]:
+        for x in [c for l,c in copied["hands"].items() if l != Ai]:
             deck.extend(x)
 
-        history = state["history"]
+        history = copied["history"]
 
         for i in history:
             if i[2] == 'took' and i[0] != Ai:
@@ -77,39 +77,34 @@ class GameEnvironment:
         asks = list(dict.fromkeys(asks))
         available = []
         for i in range(game.amount_of_players):
-            if i != (player) and len(state["hands"][i]) > 0:
+            if i != (player) and len(state["hands"][f'player{i+1}']) > 0:
                  available.append(i)
         moves = []
         for card in asks:
             for option in available:
-                    moves.append((f'player{option+1}',card,'ask')) 
+                    moves.append(('ask', f'player{option+1}', card)) 
         return moves
     
-    def remove_set(game,card,hand):
-        print(card)
-        remove = [card+'D',card+'S',card+'H',card+'C']
-        print(remove)
-        for card in remove:
-            hand.remove(card)
+    def remove_set(game, rank, hand):
+        remove_cards = [f"{rank}D", f"{rank}S", f"{rank}H", f"{rank}C"]
+        for card in remove_cards:
+            if card in hand:
+                hand.remove(card)
     
     def check_for_sets(game,state):
-        hands = state["hands"]
-        for hand in hands:
-            counter = []
-            for card in hand:
-                counter.append(card[:-1])
-            counts = Counter(counter)
-            sets = [card for card, count in counts.items() if count == 4]
-            if sets != []:
-                for set in sets:
-                    index = hands.index(hand)
-                    state["sets"][index].append(set)
-                    game.remove_set(set,hand)
+        for player, hand in state["hands"].items():
+            ranks = [card[:-1] for card in hand]
+            counts = Counter(ranks)
+            sets = [rank for rank, count in counts.items() if count == 4]
+            for set in sets:
+                state["sets"][player].append(set)
+                game.remove_set(set,hand)
 
-    def apply_move(self,state,move):
+    def apply_move(game,state,move):
         s = copy.deepcopy(state)
         current_index = s["current_player"][0]
-        target_player, rank, action = move
+        current_name = f"player{current_index + 1}"
+        action, target_player, rank = move
         history = s["history"]
         history.append(move)
         asked_hand = s["hands"][target_player]
@@ -117,23 +112,26 @@ class GameEnvironment:
         for card in asked_hand:
             if rank == card[0]:
                 Correct = True
-                history.append(s["current_player"][1],card,'took',target_player)
-                s["hands"][current_index].append(card)
+                history.append((s["current_player"][1],card,'took',target_player))
+                s["hands"][current_name].append(card)
                 asked_hand.remove(card)
-        if not Correct:
+        if Correct:
+            s["current_player"] = (current_index, current_name)
+        else:
             if s["deck"]:
-                s["hands"][current_index].append(s["deck"][0])
+                s["hands"][current_name].append(s["deck"][0])
                 s["deck"].remove(s["deck"][0])
-                s["current_player"] = ((current_index + 1) % self.amount_of_players, f'player{(current_index + 1) % self.amount_of_players}')
+                next_index = (current_index + 1) % game.amount_of_players
+                s["current_player"] = (next_index, f'player{next_index + 1}')
         s["history"] = history
 
-        self.check_for_sets(s)
+        game.check_for_sets(s)
         return s
 
-    def is_terminal(state):
+    def is_terminal(game,state):
         return (not state["deck"]) and all(len(hand) == 0 for hand in state["hands"].values())
     
-    def get_reward(self,state,index):
+    def get_reward(game,state,index):
         return len(state["sets"][f'player{index+1}'])
     
 
@@ -164,5 +162,57 @@ class Node:
             choices.append(UCT)
         return self.children[choices.index(max(choices))]
     
-    def simulations(self,game_env):
-        s = game_env
+    def simulations(self,state,game_env):
+        s = copy.deepcopy(state)
+        while not game_env.is_terminal(s):
+            moves = game_env.get_legal_moves(s)
+            if not moves:
+                break
+            move = random.choice(moves)
+            s = game_env.apply_moves(s,move)
+        return s
+
+def mcts(root_state,root_player,game_env,iterations,c_param):
+
+    for _ in range(iterations):
+        det_root = game_env.determinization(root_state)
+        root_node = Node(det_root, parent=None, move_from_parent=None)
+        root_node.untried_moves = list(game_env.get_legal_moves(root_node.state))
+        node = root_node
+        while node.tried_all_moves() and not game_env.is_terminal(node.state):
+            node = node.best_child(c_param=c_param)
+        if not game_env.is_terminal(node.state):
+            if node.untried_moves is None:
+                node.untried_moves = list(game_env.get_legal_moves(node.state))
+            if node.untried_moves:
+                move = node.untried_moves.pop(random.randrange(len(node.untried_moves)))
+                
+
+
+
+'''
+def mcts(root_state,root_player,game_env,iterations=1000,c_param=1.41):
+    root_node = Node(root_state, parent=None, move_from_parent=None)
+    root_node.untried_moves = list(game_env.get_legal_moves(root_node.state))
+
+    for _ in range(iterations):
+        node = root_node
+        while node.tried_all_moves() and not game_env.is_terminal(node.state):
+            node = node.best_child(c_param=c_param)
+        
+        if not game_env.is_terminal(node.state):
+            if node.untried_moves is None:
+                node.untried_moves = list(game_env.get_legal_moves(node.state))
+            if node.untried_moves:
+                move = node.untried_moves.pop(random.randrange(len(node.untried_moves)))
+            '''
+    
+env = GameEnvironment(4)
+
+best_move, stats = mcts(root_state=test_state,
+                        root_player=0,
+                        game_env=env
+                        iterations=2000,
+                        c_param=1.4)  # or your determinizer
+print("Selected move:", best_move)
+print(stats)
