@@ -9,6 +9,7 @@ from kivy.core.text import LabelBase
 from kivy.metrics import sp
 from kivy.metrics import dp
 from kivy.animation import Animation
+from kivy.graphics import Color, RoundedRectangle
 from kivy.graphics import PushMatrix, PopMatrix, Rotate, Scale, Translate
 
 
@@ -22,9 +23,33 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.card import MDCard
 from kivymd.uix.relativelayout import RelativeLayout
 from kivymd.uix.label import MDLabel
+from kivymd.uix.gridlayout import GridLayout
 
 
 #Custom Buttons/Cards
+class Playing_Card_Back(MDCard):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = (None,None)
+        self.size = ("64dp", "89dp")
+        self.contain = GridLayout(
+            cols = 5,
+            spacing = dp(2),
+            padding = dp(2),
+            size_hint = (None, None),
+            size = (dp(64), dp(89))
+        )
+        app = MDApp.get_running_app()
+        self.colour = app.theme_cls.PrimaryColor
+        for _ in range(35):
+            icon = MDIconButton(
+            icon = "grain",
+            theme_icon_color= "Custom",
+            icon_color = self.colour, 
+            size_hint = (None,None),
+            size=(dp(10), dp(10)))
+            self.contain.add_widget(icon)
+
 class Theme_Playing_Card(MDCard):
     def __init__(self,suit="",**kwargs):
         super().__init__(**kwargs)
@@ -124,6 +149,10 @@ class Playing_Card(MDCard):
         self.layout.add_widget(self.down_text)
         self.add_widget(self.layout)
 
+class Player_Icon(MDCard): #How to ask for cards.
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+
         
 
 #Screens
@@ -131,6 +160,9 @@ class SM(MDScreenManager):
     pass
 
 class MainMenu(MDScreen):
+    pass
+
+class NewGame(MDScreen):
     pass
 
 class InGame(MDScreen):
@@ -341,6 +373,7 @@ class GoFishApp(MDApp):
         #Assigning Screens to Screen Manager
         sm = SM()
         sm.add_widget(MainMenu(name="Menu"))
+        sm.add_widget(NewGame(name="NewGame"))
         sm.add_widget(InGame(name="InGame"))
         sm.add_widget(Rules(name="Rules"))
         sm.add_widget(Settings(name="Settings"))
@@ -415,16 +448,20 @@ class GoFishApp(MDApp):
 
     def solo(self):
         print("Solo")
+        widget = self.get_widget('deck','InGame')
+        self.root.get_screen("InGame").add_widget(Playing_Card_Back())
 
     def start(self):
         if len(self.players) == 1:
             game = Game(4,3)
             self.solo()
+        elif len(self.players) < 4:
+            game = Game(4,(4-len(self.players)))
         else:
-            self.multi()
+            game = Game(len(self.players),0)
     
     def remove(self,widget): #Not finished
-        player = self.get_widget('Players','InGame')
+        player = self.get_widget('Players','NewGame')
         self.players.remove(widget.children[1].text)
         player.remove_widget(widget)
 
@@ -433,7 +470,7 @@ class GoFishApp(MDApp):
         print(name)
         if not name:
             return
-        player = self.get_widget('Players','InGame')
+        player = self.get_widget('Players','NewGame')
         entry_box = MDBoxLayout(size_hint_y=None, height="40dp")
         label = MDLabel(text=name, halign="center")
         removebtn = MDIconButton(icon="close",on_release=lambda x: self.remove(entry_box))
