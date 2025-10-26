@@ -439,6 +439,14 @@ class GoFishApp(MDApp):
             rank = card[0]
         return (suit,rank)
     
+    def left(self):
+        Carou = self.get_widget("loop","Settings")
+        Carou.load_previous()
+
+    def right(self):
+        Carou = self.get_widget("loop","Settings")
+        Carou.load_next()
+    
     def output_cards(self):
         widget = self.get_widget("test","InGame")
         widget.add_widget(Playing_Card(self.card_type("AH")))
