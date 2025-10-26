@@ -2,7 +2,6 @@
 
 import random
 from Game import Game
-g = Game(2)
 
 #Kivy
 from kivy.core.window import Window
@@ -17,7 +16,7 @@ from kivy.graphics import PushMatrix, PopMatrix, Rotate, Scale, Translate
 from kivymd.app import MDApp
 from kivymd.uix.screenmanager import MDScreenManager
 from kivymd.uix.screen import MDScreen
-from kivymd.uix.button import MDButton, MDButtonIcon
+from kivymd.uix.button import MDButton, MDButtonIcon, MDIconButton
 from kivymd.uix.behaviors import RotateBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.card import MDCard
@@ -313,6 +312,7 @@ class GoFishApp(MDApp):
         self.theme_cls.primary_palette = "Red"
         self.theme_cls.primary_hue = "900"
         self.theme_cls.theme_style_switch_animation_duration = 0.4
+        self.players = []
 
         Window.set_icon(("icon.png"))
         #App Default Font & Font Styles
@@ -409,6 +409,39 @@ class GoFishApp(MDApp):
     def output_cards(self):
         widget = self.get_widget("test","InGame")
         widget.add_widget(Playing_Card(self.card_type("AH")))
+
+    def multi(self):
+        print("multi")
+
+    def solo(self):
+        print("Solo")
+
+    def start(self):
+        if len(self.players) == 1:
+            game = Game(4,3)
+            self.solo()
+        else:
+            self.multi()
+    
+    def remove(self,widget): #Not finished
+        player = self.get_widget('Players','InGame')
+        self.players.remove(widget.children[1].text)
+        player.remove_widget(widget)
+
+    def all_players(self,instance):
+        name = instance.text.strip()
+        print(name)
+        if not name:
+            return
+        player = self.get_widget('Players','InGame')
+        entry_box = MDBoxLayout(size_hint_y=None, height="40dp")
+        label = MDLabel(text=name, halign="center")
+        removebtn = MDIconButton(icon="close",on_release=lambda x: self.remove(entry_box))
+        entry_box.add_widget(label)
+        entry_box.add_widget(removebtn)
+        player.add_widget(entry_box, index=0)
+        self.players.append(name)
+        
         
 #Running App
 if __name__ == "__main__":

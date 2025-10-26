@@ -3,8 +3,9 @@ from collections import Counter
 from treesearch import * 
 
 class Game:
-    def __init__(game,amount_of_players):
+    def __init__(game,amount_of_players,amount_of_bots):
         game.amount_of_players = amount_of_players
+        game.amount_of_bots = amount_of_bots
         game.deck = ["AD","2D","3D","4D","5D","6D","7D","8D","9D","1D","JD","QD","KD","AS","2S","3S","4S","5S","6S","7S","8S","9S","1S","JS","QS","KS","AC","2C","3C","4C","5C","6C","7C","8C","9C","1C","JC","QC","KC","AH","2H","3H","4H","5H","6H","7H","8H","9H","1H","JH","QH","KH"]
         game.shuffled_deck = []
         game.rank_order = {
@@ -209,6 +210,3 @@ class Game:
             return move
         else:
             return three_level_mcts(game.state,game.turn,game.env,3)
-
-GoFish = Game(4)
-GoFish.game_loop()
