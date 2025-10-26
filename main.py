@@ -146,6 +146,9 @@ class Rules(MDScreen):
 class Themes(MDScreen):
     pass
 
+class Stats(MDScreen):
+    pass
+
 
 #App Bulid
 class GoFishApp(MDApp):
@@ -342,6 +345,7 @@ class GoFishApp(MDApp):
         sm.add_widget(Rules(name="Rules"))
         sm.add_widget(Settings(name="Settings"))
         sm.add_widget(Themes(name="Themes"))
+        sm.add_widget(Stats(name="Stats"))
         sm.current = "Menu"
         return sm
     

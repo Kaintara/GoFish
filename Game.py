@@ -128,14 +128,6 @@ class Game:
             return
         if len(moves) == 1:
             move = moves[0]
-        elif playernum == 3:
-            move = game.expert_call()
-        elif playernum == 2:
-            move = game.beginner_call()
-        elif playernum == 1:
-            move = game.beginner_call()
-        elif playernum == 0:
-            move = game.beginner_call()
         else:
             i = random.randint(0,len(moves)-1)
             move = moves[i]

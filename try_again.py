@@ -41,6 +41,52 @@ MDLabel:
                     canvas.after:
                         PopMatrix
 '''
+'''
+        MDCard:
+            size_hint: None, None
+            size: "64dp", "89dp"
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            theme_bg_color: "Custom"
+            md_bg_color: app.theme_cls.primaryContainerColor
+            MDRelativeLayout:
+                size: "64dp", "89dp"
+                MDLabel:
+                    text: "J"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: 'left'
+                    pos_hint: {"top":0.9, "center_x":0.2}
+                    theme_font_size: "Custom"
+                    font_size: dp(30)
+                    adaptive_size: True
+                MDLabel:
+                    pos_hint: {"top":0.4, "center_x":0.8}
+                    text: "J"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: "right"
+                    theme_font_size: "Custom"
+                    font_size: dp(30)
+                    adaptive_size: True
+                    canvas.before:
+                        PushMatrix
+                        Rotate:
+                            angle: 180
+                            origin: self.center
+                    canvas.after:
+                        PopMatrix
+                MDIconButton:
+                    theme_icon_color: "Custom"
+                    icon_color: app.theme_cls.primaryColor
+                    icon: "cards-spade"
+                    size_hint: None, None
+                    size: "50dp", "50dp"
+                    theme_font_size: "Custom"
+                    font_size: "50sp"
+                    pos_hint: {"center_x":0.5, "center_y":0.5}
+                    '''
+
+
 from matplotlib import colors
 
 colours = ['Aliceblue', 'Antiquewhite', 'Aqua', 'Aquamarine', 'Azure', 'Beige', 'Bisque', 'Black', 'Blanchedalmond', 'Blue', 'Blueviolet', 'Brown', 'Burlywood', 'Cadetblue', 'Chartreuse', 'Chocolate', 'Coral', 'Cornflowerblue', 'Cornsilk', 'Crimson', 'Cyan', 'Darkblue', 'Darkcyan', 'Darkgoldenrod', 'Darkgray', 'Darkgrey', 'Darkgreen', 'Darkkhaki', 'Darkmagenta', 'Darkolivegreen', 'Darkorange', 'Darkorchid', 'Darkred', 'Darksalmon', 'Darkseagreen', 'Darkslateblue', 'Darkslategray', 'Darkslategrey', 'Darkturquoise', 'Darkviolet', 'Deeppink', 'Deepskyblue', 'Dimgray', 'Dimgrey', 'Dodgerblue', 'Firebrick', 'Floralwhite', 'Forestgreen', 'Fuchsia', 'Gainsboro', 'Ghostwhite', 'Gold', 'Goldenrod', 'Gray', 'Grey', 'Green', 'Greenyellow', 'Honeydew', 'Hotpink', 'Indianred', 'Indigo', 'Ivory', 'Khaki', 'Lavender', 'Lavenderblush', 'Lawngreen', 'Lemonchiffon', 'Lightblue', 'Lightcoral', 'Lightcyan', 'Lightgoldenrodyellow', 'Lightgreen', 'Lightgray', 'Lightgrey', 'Lightpink', 'Lightsalmon', 'Lightseagreen', 'Lightskyblue', 'Lightslategray', 'Lightslategrey', 'Lightsteelblue', 'Lightyellow', 'Lime', 'Limegreen', 'Linen', 'Magenta', 'Maroon', 'Mediumaquamarine', 'Mediumblue', 'Mediumorchid', 'Mediumpurple', 'Mediumseagreen', 'Mediumslateblue', 'Mediumspringgreen', 'Mediumturquoise', 'Mediumvioletred', 'Midnightblue', 'Mintcream', 'Mistyrose', 'Moccasin', 'Navajowhite', 'Navy', 'Oldlace', 'Olive', 'Olivedrab', 'Orange', 'Orangered', 'Orchid', 'Palegoldenrod', 'Palegreen', 'Paleturquoise', 'Palevioletred', 'Papayawhip', 'Peachpuff', 'Peru', 'Pink', 'Plum', 'Powderblue', 'Purple', 'Red', 'Rosybrown', 'Royalblue', 'Saddlebrown', 'Salmon', 'Sandybrown', 'Seagreen', 'Seashell', 'Sienna', 'Silver', 'Skyblue', 'Slateblue', 'Slategray', 'Slategrey', 'Snow', 'Springgreen', 'Steelblue', 'Tan', 'Teal', 'Thistle', 'Tomato', 'Turquoise', 'Violet', 'Wheat', 'White', 'Whitesmoke', 'Yellow', 'Yellowgreen']
