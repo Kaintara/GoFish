@@ -10,6 +10,7 @@ from kivy.metrics import sp
 from kivy.metrics import dp
 from kivy.animation import Animation
 from kivy.graphics import Color, RoundedRectangle
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.graphics import PushMatrix, PopMatrix, Rotate, Scale, Translate
 
 
@@ -24,6 +25,7 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.relativelayout import RelativeLayout
 from kivymd.uix.label import MDLabel
 from kivymd.uix.gridlayout import GridLayout
+from kivymd.uix.fitimage import FitImage
 
 
 #Custom Buttons/Cards
@@ -33,46 +35,11 @@ class Playing_Card_Back(MDCard):
         self.size_hint = (None,None)
         self.size = ("64dp", "89dp")
         self.pos_hint = {"center_x": 0.5, "center_y": 0.5}
-        app = MDApp.get_running_app()
-        self.layout = RelativeLayout(
-            size = ("64dp", "89dp")
+        self.layout = FitImage(
+            size = ("64dp", "89dp"),
+            source = "Card_Back.png",
         )
-        self.up_text = MDLabel(
-            text = suit_rank[1],
-            font_style= "cataway",
-            role= "small",
-            halign= 'left',
-            pos_hint= {"top":1, "center_x":0.2},
-            theme_font_size= "Custom",
-            font_size= dp(30),
-            adaptive_size= True
-        )
-        self.down_text = Card_Label(
-            pos_hint= {"top":1.1, "center_x":0.8},
-            text= suit_rank[1],
-            font_style= "cataway",
-            role= "small",
-            halign= "right",
-            theme_font_size= "Custom",
-            font_size= dp(30),
-            adaptive_size= True
-        )
-
-        self.icon = MDButtonIcon(
-            icon = self.suit,
-            size_hint = (None,None),
-            theme_font_size = "Custom",
-            font_size = "50sp",
-            theme_icon_color= "Custom",
-            icon_color = self.colour, 
-            pos_hint = {"center_x":0.5, "center_y":0.5},
-            on_release = lambda x:app.change_theme(self.colour)
-        )
-        self.layout.add_widget(self.icon)
-        self.layout.add_widget(self.up_text)
-        self.layout.add_widget(self.down_text)
         self.add_widget(self.layout)
-
 
 class Theme_Playing_Card(MDCard):
     def __init__(self,suit="",**kwargs):
@@ -144,7 +111,7 @@ class Playing_Card(MDCard):
             halign= 'left',
             pos_hint= {"top":1, "center_x":0.2},
             theme_font_size= "Custom",
-            font_size= dp(30),
+            font_size = dp(30),
             adaptive_size= True
         )
         self.down_text = Card_Label(
@@ -172,6 +139,65 @@ class Playing_Card(MDCard):
         self.layout.add_widget(self.up_text)
         self.layout.add_widget(self.down_text)
         self.add_widget(self.layout)
+
+class Deck_Cards(RelativeLayout):
+    def __init__(self,suit_rank,**kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = (None,None)
+        self.size = (dp(64),dp(89))
+        self.pos_hint = {"center_x": 0.5, "center_y":0.5}
+        self.card_front = Playing_Card(suit_rank)
+        self.card_back = Playing_Card_Back()
+        self.buffer = Playing_Card_Back()
+        self.add_widget(self.buffer)
+        self.add_widget(self.card_front)
+        self.add_widget(self.card_back)
+        self.remove_widget(self.buffer)
+        self.is_front_visible = False
+
+
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            print("Card clicked!")
+            self.flip()  # call your flip animation
+            return True
+        return super().on_touch_down(touch)
+
+
+    def flip(self, *args):
+        if getattr(self, "_is_animating", False):
+            return
+        self._is_animating = True
+        # remember original width so we can animate back to it
+        original_width = self.width
+
+        anim1 = Animation(width=0, duration=0., t="out_quad")
+        anim2 = Animation(width=original_width, duration=0.15, t="out_quad")
+
+        def halfway_callback(*_):
+            # swap front/back while widget is "narrow"
+            self.clear_widgets()
+            if self.is_front_visible:
+                self.add_widget(self.card_back)
+            else:
+                self.add_widget(self.card_front)
+            self.is_front_visible = not self.is_front_visible
+
+        def finish_callback(*_):
+            self._is_animating = False
+
+        # run halfway when first animation completes, then let the sequence animate back
+        anim1.bind(on_complete=lambda *_: halfway_callback())
+        anim2.bind(on_complete=lambda *_: finish_callback())
+
+        # play animations sequentially
+        (anim1 + anim2).start(self)
+
+    def on_scale_x(self, instance, value):
+        self.scale_x = value
+        
+
+        
 
 class Player_Icon(MDCard): #How to ask for cards.
     def __init__(self,**kwargs):
@@ -481,7 +507,7 @@ class GoFishApp(MDApp):
     def solo(self):
         print("Solo")
         widget = self.get_widget('deck','InGame')
-        self.root.get_screen("InGame").add_widget(Playing_Card_Back())
+        self.root.get_screen("InGame").add_widget(Deck_Cards(self.card_type("AH")))
 
     def start(self):
         if len(self.players) == 1:
