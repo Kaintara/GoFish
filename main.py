@@ -1,6 +1,7 @@
 #Imports
 
 from math import sin, cos, radians
+import time
 import random
 from Game import Game
 
@@ -13,6 +14,7 @@ from kivy.animation import Animation
 from kivy.graphics import Color, RoundedRectangle
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.graphics import PushMatrix, PopMatrix, Rotate, Scale, Translate
+from kivy.clock import Clock
 
 
 #KivyMD
@@ -198,6 +200,14 @@ class Deck_Cards(RelativeLayout):
         with self.canvas.before:
             PushMatrix()
             self.angle = random.randint(0,360)
+            self.rotate = Rotate(angle=self.angle, origin=self.center)
+        with self.canvas.after:
+            PopMatrix()
+
+    def un_rotate(self, *args):
+        with self.canvas.before:
+            PushMatrix()
+            self.angle = 0
             self.rotate = Rotate(angle=self.angle, origin=self.center)
         with self.canvas.after:
             PopMatrix()
@@ -640,21 +650,28 @@ class GoFishApp(MDApp):
             Bot.pos_hint = {"center_x": center_x,"center_y": center_y}
             display.add_widget(Bot)
 
-    def deal_cards(self):
+    def deal_cards(self,current_player):
         g = self.game_instance
         g.distribute_cards()
         g.Update_GameState()
         widget = self.get_widget("deck","InGame")
-        for i in range((g.amount_of_players * 7)):
-            player_num = i%g.amount_of_players
+        for i in range((g.amount_of_players * 8)):
             card = widget.children[(g.amount_of_players * 7) - 1 - i]
-            if player_num == 0:
-                contain = self.get_widget("hand","InGame")
-                widget.remove_widget(card)
-                contain.add_widget(card)
-            else:
-                widget.remove_widget(card)
+            widget.remove_widget(card)
+        for card in g.hands[self.players.index(current_player)]:
+            Card = Playing_Card(self.card_type(card))
+            Clock.schedule_once(lambda dt, c=Card: self.draw_animation(c), i * 0.2)
 
+    def draw_animation(self,card):
+        back = Playing_Card_Back()
+        back.pos_hint = {"center_x":0.5,"center_y":0.5}
+        anim = Animation(pos_hint = {"center_x":0.5,"center_y":0.1}, d= 0.2, t="out_quad")
+        hand = self.get_widget("hand","InGame")
+        display = self.root.get_screen("InGame")
+        display.add_widget(back)
+        anim.bind(on_complete=lambda *a: display.remove_widget(back))
+        anim.bind(on_complete=lambda *a: hand.add_widget(card))
+        anim.start(back)
 
     def multi(self):
         print("multi")
@@ -665,7 +682,8 @@ class GoFishApp(MDApp):
         self.assign_player_num()
         g.Update_GameState()
         self.output_players(self.players[0])
-        self.deal_cards()
+        self.deal_cards(self.players[0])
+        
 
     def start(self):
         if len(self.players) == 1:

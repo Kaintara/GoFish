@@ -124,6 +124,7 @@
 <InGame>:
     md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
+        id: dis
         RelativeLayout:
             id: deck
             adaptive_height: True
@@ -137,9 +138,11 @@
             pos_hint: {"center_x": 0.5,"center_y":0.1}
             size_hint_x: 1
             size_hint_y: 0.2
-            RelativeLayout:
+            MDBoxLayout:
                 id: hand
-                adaptive_height: True
+                orientation: "horizontal"
+                adaptive_size: True
+                pos_hint: {"left": 1}
             
 
 
