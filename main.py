@@ -26,6 +26,7 @@ from kivymd.uix.relativelayout import RelativeLayout
 from kivymd.uix.label import MDLabel
 from kivymd.uix.gridlayout import GridLayout
 from kivymd.uix.fitimage import FitImage
+from kivymd.uix.dialog import MDDialog, MDDialogHeadlineText, MDDialogButtonContainer, MDDialogIcon, MDDialogContentContainer, MDDialogSupportingText
 
 
 #Custom Buttons/Cards
@@ -159,8 +160,10 @@ class Deck_Cards(RelativeLayout):
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
-            print("Card clicked!")
-            self.flip()  # call your flip animation
+            parent = self.parent
+            parent.remove_widget(self)
+            parent.add_widget(self, index=0)
+            self.flip() 
             return True
         return super().on_touch_down(touch)
 
@@ -169,14 +172,12 @@ class Deck_Cards(RelativeLayout):
         if getattr(self, "_is_animating", False):
             return
         self._is_animating = True
-        # remember original width so we can animate back to it
         original_width = self.width
 
         anim1 = Animation(width=0, duration=0.2, t="out_quad")
         anim2 = Animation(width=original_width, duration=0.2, t="out_quad")
 
         def halfway_callback(*_):
-            # swap front/back while widget is "narrow"
             self.clear_widgets()
             if self.is_front_visible:
                 self.add_widget(self.card_back)
@@ -187,11 +188,9 @@ class Deck_Cards(RelativeLayout):
         def finish_callback(*_):
             self._is_animating = False
 
-        # run halfway when first animation completes, then let the sequence animate back
         anim1.bind(on_complete=lambda *_: halfway_callback())
         anim2.bind(on_complete=lambda *_: finish_callback())
 
-        # play animations sequentially
         (anim1 + anim2).start(self)
 
     def rotate(self, *args):
@@ -201,18 +200,53 @@ class Deck_Cards(RelativeLayout):
             self.rotate = Rotate(angle=self.angle, origin=self.center)
         with self.canvas.after:
             PopMatrix()
+ 
 
-        
+class Bot_Icon(MDCard):
+    def __init__(self,name,playernum,**kwargs):
+        super().__init__(**kwargs)
+        self.name = name
+        self.size = (dp(100),dp(100))
+        self.size_hint = (None, None)
+        self.radius = [dp(75)]
+        self.label = MDLabel(
+            text=name[0] 
+        )
 
-        
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            app = MDApp.get_running_app()
+            g = app.game_instance
+            MDDialog(MDDialogIcon(icon="account-circle"),
+        MDDialogHeadlineText(
+            text=self.name,
+            halign="center",
+            font_style= "cataway",
+            role="medium",
+        ),
+        MDDialogSupportingText(
+            text=f"Set Count: {g.get}",
+            halign="center",
+            font_style= "cataway",
+            role="small",
+            markup = True,
+        )).open()
+        return super().on_touch_down(touch)
 
 class Player_Icon(MDCard): #How to ask for cards.
-    def __init__(self,**kwargs):
+    def __init__(self,name,**kwargs):
         super().__init__(**kwargs)
         self.size = (dp(100),dp(100))
         self.size_hint = (None, None)
         self.radius = [dp(75)]
+        self.label = MDLabel(
+            text=name 
+        )
 
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            pass
+        return super().on_touch_down(touch)
 
         
 
@@ -407,6 +441,7 @@ class GoFishApp(MDApp):
         self.theme_cls.primary_hue = "900"
         self.theme_cls.theme_style_switch_animation_duration = 0.4
         self.players = []
+        self.player_num_map = {}
 
         Window.set_icon(("icon.png"))
         #App Default Font & Font Styles
@@ -513,6 +548,17 @@ class GoFishApp(MDApp):
         widget = self.get_widget("test","InGame")
         widget.add_widget(Playing_Card(self.card_type("AH")))
 
+    def assign_player_num(self):
+        g = self.game_instance
+        for i in range(g.amount_of_players):
+            if self.players:
+                self.player_num_map[f"player{i+1}"] = self.players[i]
+            else:
+                self.player_num_map[f"player{i+1}"] = f"Bot{}"
+
+            
+
+
     def output_deck(self):
         g = self.game_instance
         g.shuffle_cards()
@@ -522,6 +568,14 @@ class GoFishApp(MDApp):
             Card.pos_hint = {"center_x":(random.randint(0,100) / 100),"center_y":(random.randint(0,100) / 100)} 
             Card.rotate()
             widget.add_widget(Card)
+    
+    def output_players(self):
+        g = self.game_instance
+        for bot in range(g.amount_of_bots):
+            display = self.root.get_screen("InGame")
+            Bot = Bot_Icon(f"Bot{bot + 1}")
+            Bot.pos_hint = {"center_x": (0.4 + (bot/10)),"center_y":0.7}
+            display.add_widget(Bot)
 
     def multi(self):
         print("multi")
@@ -529,6 +583,7 @@ class GoFishApp(MDApp):
     def solo(self):
         print("Solo")
         self.output_deck()
+        self.output_players()
 
     def start(self):
         if len(self.players) == 1:
