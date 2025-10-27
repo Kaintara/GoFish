@@ -25,7 +25,7 @@ class Game:
         }
         game.hands = [[] for _ in range(amount_of_players)]
         game.sets = [[] for _ in range(amount_of_players)]
-        game.turn = ''
+        game.turn = 0
         game.history = []
         game.state = {
             "hands": {},

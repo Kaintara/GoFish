@@ -205,13 +205,27 @@ class Deck_Cards(RelativeLayout):
 class Bot_Icon(MDCard):
     def __init__(self,name,playernum,**kwargs):
         super().__init__(**kwargs)
+        app = MDApp.get_running_app()
+        g = app.game_instance
         self.name = name
+        self.player = playernum
         self.size = (dp(100),dp(100))
         self.size_hint = (None, None)
         self.radius = [dp(75)]
+        self.padding = (0, 0, 0, 0)
         self.label = MDLabel(
-            text=name[0] 
+            text=f"B{name[3]}",
+            halign="center",
+            valign="middle",
+            font_style = "cataway",
+            size=self.size,
+            size_hint=(None, None),
+            theme_font_size = "Custom",
+            font_size = dp(40),
+            text_size=self.size,
+            pos_hint={"center_x": 0.5, "center_y": 0.5},
         )
+        self.add_widget(self.label)
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
@@ -225,27 +239,59 @@ class Bot_Icon(MDCard):
             role="medium",
         ),
         MDDialogSupportingText(
-            text=f"Set Count: {g.get}",
-            halign="center",
+            text=f"- Set Count: {len(g.state["sets"][self.player])}\n- No. of Cards in Hand: {len(g.state["hands"][self.player])}",
+            halign="left",
             font_style= "cataway",
-            role="small",
+            theme_font_size = "Custom",
+            font_size = dp(20),
             markup = True,
         )).open()
         return super().on_touch_down(touch)
 
 class Player_Icon(MDCard): #How to ask for cards.
-    def __init__(self,name,**kwargs):
+    def __init__(self,name,playernum,**kwargs):
         super().__init__(**kwargs)
+        app = MDApp.get_running_app()
+        g = app.game_instance
+        self.name = name
+        self.player = playernum
         self.size = (dp(100),dp(100))
         self.size_hint = (None, None)
         self.radius = [dp(75)]
+        self.padding = (0, 0, 0, 0)
         self.label = MDLabel(
-            text=name 
+            text=f"{name[0]}",
+            halign="center",
+            valign="middle",
+            font_style = "cataway",
+            size=self.size,
+            size_hint=(None, None),
+            theme_font_size = "Custom",
+            font_size = dp(40),
+            text_size=self.size,
+            pos_hint={"center_x": 0.5, "center_y": 0.5},
         )
+        self.add_widget(self.label)
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
-            pass
+            app = MDApp.get_running_app()
+            g = app.game_instance
+            MDDialog(MDDialogIcon(icon="account-circle"),
+        MDDialogHeadlineText(
+            text=self.name,
+            halign="center",
+            font_style= "cataway",
+            role="medium",
+        ),
+        MDDialogSupportingText(
+            text=f"- Set Count: {len(g.state["sets"][self.player])}\n- No. of Cards in Hand: {len(g.state["hands"][self.player])}",
+            halign="left",
+            font_style= "cataway",
+            theme_font_size = "Custom",
+            font_size = dp(20),
+            markup = True,
+        )).open()
         return super().on_touch_down(touch)
 
         
@@ -551,13 +597,10 @@ class GoFishApp(MDApp):
     def assign_player_num(self):
         g = self.game_instance
         for i in range(g.amount_of_players):
-            if self.players:
-                self.player_num_map[f"player{i+1}"] = self.players[i]
-            else:
-                self.player_num_map[f"player{i+1}"] = f"Bot{}"
-
-            
-
+            try:
+                self.player_num_map[self.players[i]] = f"player{i+1}"
+            except:
+                self.player_num_map[f"Bot{(i-(g.amount_of_players-g.amount_of_bots-1))}"] = f"player{i+1}"
 
     def output_deck(self):
         g = self.game_instance
@@ -569,21 +612,35 @@ class GoFishApp(MDApp):
             Card.rotate()
             widget.add_widget(Card)
     
-    def output_players(self):
+    def output_players(self,current_player):
         g = self.game_instance
+        for player in range(g.amount_of_players-g.amount_of_bots):
+            if self.players[player] == current_player:
+                contain = self.get_widget("playerview","InGame")
+                Player = Player_Icon(self.players[player],self.player_num_map[self.players[player]])
+                Player.pos_hint = {"center_x": 0.2,"center_y":0.5}
+                contain.add_widget(Player)
+            else:
+                display = self.root.get_screen("InGame")
+                Player = Player_Icon(self.players[player],self.player_num_map[self.players[player]])
+                display.add_widget(Player)
+            
         for bot in range(g.amount_of_bots):
             display = self.root.get_screen("InGame")
-            Bot = Bot_Icon(f"Bot{bot + 1}")
-            Bot.pos_hint = {"center_x": (0.4 + (bot/10)),"center_y":0.7}
+            Bot = Bot_Icon(f"Bot{bot + 1}",self.player_num_map[f"Bot{bot + 1}"])
+            Bot.pos_hint = {"center_x": (0.4 + ((bot + 1)/10)),"center_y":0.7}
             display.add_widget(Bot)
 
     def multi(self):
         print("multi")
 
     def solo(self):
+        g = self.game_instance
         print("Solo")
         self.output_deck()
-        self.output_players()
+        self.assign_player_num()
+        g.Update_GameState()
+        self.output_players(self.players[0])
 
     def start(self):
         if len(self.players) == 1:
