@@ -86,6 +86,32 @@ MDLabel:
                     pos_hint: {"center_x":0.5, "center_y":0.5}
                     '''
 
+'''
+def deal_cards(self,current_player):
+        g = self.game_instance
+        g.distribute_cards()
+        g.Update_GameState()
+        widget = self.get_widget("deck","InGame")
+        for i in range((g.amount_of_players * 8)):
+            card = widget.children[(g.amount_of_players * 7) - 1 - i]
+            widget.remove_widget(card)
+        for card in g.hands[self.players.index(current_player)]:
+            Card = Playing_Card(self.card_type(card))
+            Clock.schedule_once(lambda dt, c=Card: self.draw_animation(c), i * 0.2)
+
+    def draw_animation(self,card):
+        back = Playing_Card_Back()
+        back.pos_hint = {"center_x":0.5,"center_y":0.5}
+        anim = Animation(pos_hint = {"center_x":0.5,"center_y":0.1}, d= 0.2, t="out_quad")
+        hand = self.get_widget("hand","InGame")
+        display = self.root.get_screen("InGame")
+        display.add_widget(back)
+        anim.bind(on_complete=lambda *a: display.remove_widget(back))
+        anim.bind(on_complete=lambda *a: hand.add_widget(card))
+        anim.start(back)
+'''
+
+
 
 from matplotlib import colors
 

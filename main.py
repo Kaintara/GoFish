@@ -100,6 +100,7 @@ class Playing_Card(MDCard):
         self.size = ("64dp", "89dp")
         self.pos_hint = {"center_x": 0.5, "center_y": 0.5}
         self.suit = suit_rank[0]
+        self.rank = suit_rank[1]
         app = MDApp.get_running_app()
         if self.suit == "cards-diamond" or self.suit == "cards-heart":
             self.colour = app.theme_cls.inversePrimaryColor
@@ -120,7 +121,7 @@ class Playing_Card(MDCard):
         )
         self.down_text = Card_Label(
             pos_hint= {"top":1.1, "center_x":0.8},
-            text= suit_rank[1],
+            text= self.rank,
             font_style= "cataway",
             role= "small",
             halign= "right",
@@ -143,6 +144,13 @@ class Playing_Card(MDCard):
         self.layout.add_widget(self.up_text)
         self.layout.add_widget(self.down_text)
         self.add_widget(self.layout)
+
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            app = MDApp.get_running_app()
+            app.selected_rank = self.rank
+            app.selected = True
+        return super().on_touch_down(touch)
 
 
 class Deck_Cards(RelativeLayout):
@@ -241,22 +249,26 @@ class Bot_Icon(MDCard):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             app = MDApp.get_running_app()
-            g = app.game_instance
-            MDDialog(MDDialogIcon(icon="account-circle"),
-        MDDialogHeadlineText(
-            text=self.name,
-            halign="center",
-            font_style= "cataway",
-            role="medium",
-        ),
-        MDDialogSupportingText(
-            text=f"- Set Count: {len(g.state["sets"][self.player])}\n- No. of Cards in Hand: {len(g.state["hands"][self.player])}",
-            halign="left",
-            font_style= "cataway",
-            theme_font_size = "Custom",
-            font_size = dp(20),
-            markup = True,
-        )).open()
+            if app.selected:
+                move = (self.player,app.selected_rank,'ask')
+                #if move in g.
+            else:
+                g = app.game_instance
+                MDDialog(MDDialogIcon(icon="account-circle"),
+            MDDialogHeadlineText(
+                text=self.name,
+                halign="center",
+                font_style= "cataway",
+                role="medium",
+            ),
+            MDDialogSupportingText(
+                text=f"- Set Count: {len(g.state["sets"][self.player])}\n- No. of Cards in Hand: {len(g.state["hands"][self.player])}",
+                halign="left",
+                font_style= "cataway",
+                theme_font_size = "Custom",
+                font_size = dp(20),
+                markup = True,
+            )).open()
         return super().on_touch_down(touch)
 
 class Player_Icon(MDCard): #How to ask for cards.
@@ -499,6 +511,8 @@ class GoFishApp(MDApp):
         self.theme_cls.theme_style_switch_animation_duration = 0.4
         self.players = []
         self.player_num_map = {}
+        self.selected_rank = ''
+        self.selected = False
 
         Window.set_icon(("icon.png"))
         #App Default Font & Font Styles
@@ -600,10 +614,6 @@ class GoFishApp(MDApp):
     def right(self):
         Carou = self.get_widget("loop","Settings")
         Carou.load_next()
-    
-    def output_cards(self):
-        widget = self.get_widget("test","InGame")
-        widget.add_widget(Playing_Card(self.card_type("AH")))
 
     def assign_player_num(self):
         g = self.game_instance
@@ -615,7 +625,6 @@ class GoFishApp(MDApp):
 
     def output_deck(self):
         g = self.game_instance
-        g.shuffle_cards()
         widget = self.get_widget("deck","InGame")
         for card in g.shuffled_deck:
             Card = Deck_Cards(self.card_type(card))
@@ -652,32 +661,20 @@ class GoFishApp(MDApp):
 
     def deal_cards(self,current_player):
         g = self.game_instance
-        g.distribute_cards()
         g.Update_GameState()
-        widget = self.get_widget("deck","InGame")
-        for i in range((g.amount_of_players * 8)):
-            card = widget.children[(g.amount_of_players * 7) - 1 - i]
-            widget.remove_widget(card)
         for card in g.hands[self.players.index(current_player)]:
             Card = Playing_Card(self.card_type(card))
-            Clock.schedule_once(lambda dt, c=Card: self.draw_animation(c), i * 0.2)
-
-    def draw_animation(self,card):
-        back = Playing_Card_Back()
-        back.pos_hint = {"center_x":0.5,"center_y":0.5}
-        anim = Animation(pos_hint = {"center_x":0.5,"center_y":0.1}, d= 0.2, t="out_quad")
-        hand = self.get_widget("hand","InGame")
-        display = self.root.get_screen("InGame")
-        display.add_widget(back)
-        anim.bind(on_complete=lambda *a: display.remove_widget(back))
-        anim.bind(on_complete=lambda *a: hand.add_widget(card))
-        anim.start(back)
+            hand = self.get_widget("hand","InGame")
+            hand.add_widget(Card)
 
     def multi(self):
         print("multi")
 
     def solo(self):
         g = self.game_instance
+        g.shuffle_cards()
+        g.distribute_cards()
+        g.sort_cards()
         self.output_deck()
         self.assign_player_num()
         g.Update_GameState()
