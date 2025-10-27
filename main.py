@@ -140,6 +140,7 @@ class Playing_Card(MDCard):
         self.layout.add_widget(self.down_text)
         self.add_widget(self.layout)
 
+
 class Deck_Cards(RelativeLayout):
     def __init__(self,suit_rank,**kwargs):
         super().__init__(**kwargs)
@@ -171,8 +172,8 @@ class Deck_Cards(RelativeLayout):
         # remember original width so we can animate back to it
         original_width = self.width
 
-        anim1 = Animation(width=0, duration=0., t="out_quad")
-        anim2 = Animation(width=original_width, duration=0.15, t="out_quad")
+        anim1 = Animation(width=0, duration=0.2, t="out_quad")
+        anim2 = Animation(width=original_width, duration=0.2, t="out_quad")
 
         def halfway_callback(*_):
             # swap front/back while widget is "narrow"
@@ -193,8 +194,14 @@ class Deck_Cards(RelativeLayout):
         # play animations sequentially
         (anim1 + anim2).start(self)
 
-    def on_scale_x(self, instance, value):
-        self.scale_x = value
+    def rotate(self, *args):
+        with self.canvas.before:
+            PushMatrix()
+            self.angle = random.randint(0,360)
+            self.rotate = Rotate(angle=self.angle, origin=self.center)
+        with self.canvas.after:
+            PopMatrix()
+
         
 
         
@@ -202,6 +209,10 @@ class Deck_Cards(RelativeLayout):
 class Player_Icon(MDCard): #How to ask for cards.
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
+        self.size = (dp(100),dp(100))
+        self.size_hint = (None, None)
+        self.radius = [dp(75)]
+
 
         
 
@@ -235,6 +246,7 @@ class Stats(MDScreen):
 class GoFishApp(MDApp):
 
     def __init__(self, **kwargs):
+        self.game_instance = None
         self.sm_stack = []
         self.colours = ['Lightpink', 'Pink', 'Crimson', 'Palevioletred', 'Lavenderblush', 'Hotpink', 'Deeppink', 'Mediumvioletred', 'Orchid', 'Fuchsia', 'Magenta', 'Darkmagenta', 'Purple', 'Violet', 'Plum', 'Thistle', 'Mediumorchid', 'Darkviolet', 'Darkorchid', 'Indigo', 'Blueviolet', 'Mediumpurple', 'Mediumslateblue', 'Darkslateblue', 'Slateblue', 'Blue', 'Mediumblue', 'Darkblue', 'Navy', 'Midnightblue', 'Lavender', 'Ghostwhite', 'Royalblue', 'Cornflowerblue', 'Lightsteelblue', 'Lightslategray', 'Lightslategrey', 'Slategray', 'Slategrey', 'Dodgerblue', 'Aliceblue', 'Steelblue', 'Lightskyblue', 'Skyblue', 'Deepskyblue', 'Lightblue', 'Powderblue', 'Cadetblue', 'Darkturquoise', 'Aqua', 'Cyan', 'Darkcyan', 'Teal', 'Darkslategray', 'Darkslategrey', 'Paleturquoise', 'Lightcyan', 'Azure', 'Mediumturquoise', 'Lightseagreen', 'Turquoise', 'Aquamarine', 'Mediumaquamarine', 'Mediumspringgreen', 'Springgreen', 'Mintcream', 'Mediumseagreen', 'Seagreen', 'Lime', 'Green', 'Darkgreen', 'Limegreen', 'Forestgreen', 'Lightgreen', 'Palegreen', 'Darkseagreen', 'Honeydew', 'Lawngreen', 'Chartreuse', 'Greenyellow', 'Darkolivegreen', 'Yellowgreen', 'Olivedrab', 'Yellow', 'Olive', 'Lightgoldenrodyellow', 'Lightyellow', 'Beige', 'Ivory', 'Darkkhaki', 'Palegoldenrod', 'Khaki', 'Lemonchiffon', 'Gold', 'Cornsilk', 'Goldenrod', 'Darkgoldenrod', 'Floralwhite', 'Oldlace', 'Wheat', 'Orange', 'Moccasin', 'Papayawhip', 'Blanchedalmond', 'Navajowhite', 'Antiquewhite', 'Tan', 'Burlywood', 'Darkorange', 'Bisque', 'Linen', 'Peru', 'Peachpuff', 'Sandybrown', 'Seashell', 'Saddlebrown', 'Chocolate', 'Sienna', 'Lightsalmon', 'Orangered', 'Coral', 'Darksalmon', 'Tomato', 'Salmon', 'Mistyrose', 'Red', 'Darkred', 'Maroon', 'Firebrick', 'Brown', 'Indianred', 'Lightcoral', 'Rosybrown', 'Snow', 'White', 'Whitesmoke', 'Gainsboro', 'Lightgray', 'Lightgrey', 'Silver', 'Darkgray', 'Darkgrey', 'Gray', 'Grey', 'Dimgray', 'Dimgrey', 'Black']
         self.colours_map = {
@@ -501,22 +513,31 @@ class GoFishApp(MDApp):
         widget = self.get_widget("test","InGame")
         widget.add_widget(Playing_Card(self.card_type("AH")))
 
+    def output_deck(self):
+        g = self.game_instance
+        g.shuffle_cards()
+        widget = self.get_widget("deck","InGame")
+        for card in g.shuffled_deck:
+            Card = Deck_Cards(self.card_type(card))
+            Card.pos_hint = {"center_x":(random.randint(0,100) / 100),"center_y":(random.randint(0,100) / 100)} 
+            Card.rotate()
+            widget.add_widget(Card)
+
     def multi(self):
         print("multi")
 
     def solo(self):
         print("Solo")
-        widget = self.get_widget('deck','InGame')
-        self.root.get_screen("InGame").add_widget(Deck_Cards(self.card_type("AH")))
+        self.output_deck()
 
     def start(self):
         if len(self.players) == 1:
-            game = Game(4,3)
+            self.game_instance = Game(4,3)
             self.solo()
         elif len(self.players) < 4:
-            game = Game(4,(4-len(self.players)))
+            self.game_instance = Game(4,(4-len(self.players)))
         else:
-            game = Game(len(self.players),0)
+            self.game_instance = Game(len(self.players),0)
     
     def remove(self,widget): #Not finished
         player = self.get_widget('Players','NewGame')
