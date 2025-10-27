@@ -15,3 +15,6 @@ I developed this game, so I could play go fish
 I learnt how to create game trees, how to use the material designs themes 
 
 Difficult Parts
+
+- Creating the Bot decisions
+- Creating the User Interface, especially regarding the gameplay as I struggled with generating cards and 

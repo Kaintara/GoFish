@@ -32,23 +32,47 @@ class Playing_Card_Back(MDCard):
         super().__init__(**kwargs)
         self.size_hint = (None,None)
         self.size = ("64dp", "89dp")
-        self.contain = GridLayout(
-            cols = 5,
-            spacing = dp(2),
-            padding = dp(2),
-            size_hint = (None, None),
-            size = (dp(64), dp(89))
-        )
+        self.pos_hint = {"center_x": 0.5, "center_y": 0.5}
         app = MDApp.get_running_app()
-        self.colour = app.theme_cls.PrimaryColor
-        for _ in range(35):
-            icon = MDIconButton(
-            icon = "grain",
+        self.layout = RelativeLayout(
+            size = ("64dp", "89dp")
+        )
+        self.up_text = MDLabel(
+            text = suit_rank[1],
+            font_style= "cataway",
+            role= "small",
+            halign= 'left',
+            pos_hint= {"top":1, "center_x":0.2},
+            theme_font_size= "Custom",
+            font_size= dp(30),
+            adaptive_size= True
+        )
+        self.down_text = Card_Label(
+            pos_hint= {"top":1.1, "center_x":0.8},
+            text= suit_rank[1],
+            font_style= "cataway",
+            role= "small",
+            halign= "right",
+            theme_font_size= "Custom",
+            font_size= dp(30),
+            adaptive_size= True
+        )
+
+        self.icon = MDButtonIcon(
+            icon = self.suit,
+            size_hint = (None,None),
+            theme_font_size = "Custom",
+            font_size = "50sp",
             theme_icon_color= "Custom",
             icon_color = self.colour, 
-            size_hint = (None,None),
-            size=(dp(10), dp(10)))
-            self.contain.add_widget(icon)
+            pos_hint = {"center_x":0.5, "center_y":0.5},
+            on_release = lambda x:app.change_theme(self.colour)
+        )
+        self.layout.add_widget(self.icon)
+        self.layout.add_widget(self.up_text)
+        self.layout.add_widget(self.down_text)
+        self.add_widget(self.layout)
+
 
 class Theme_Playing_Card(MDCard):
     def __init__(self,suit="",**kwargs):
