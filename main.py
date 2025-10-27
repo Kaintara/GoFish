@@ -1,5 +1,6 @@
 #Imports
 
+from math import sin, cos, radians
 import random
 from Game import Game
 
@@ -614,33 +615,57 @@ class GoFishApp(MDApp):
     
     def output_players(self,current_player):
         g = self.game_instance
+        angle_step = 180 / (g.amount_of_players-1)
         for player in range(g.amount_of_players-g.amount_of_bots):
+            angle = radians(player * angle_step)
+            center_x = 0.5 + 0.4 * cos(angle)
+            center_y = 0.5 + 0.4 * sin(angle)
             if self.players[player] == current_player:
                 contain = self.get_widget("playerview","InGame")
                 Player = Player_Icon(self.players[player],self.player_num_map[self.players[player]])
-                Player.pos_hint = {"center_x": 0.2,"center_y":0.5}
+                Player.pos_hint = {"center_x": center_x,"center_y": center_y}
                 contain.add_widget(Player)
             else:
                 display = self.root.get_screen("InGame")
                 Player = Player_Icon(self.players[player],self.player_num_map[self.players[player]])
+                Player.pos_hint = {"center_x": 0.2,"center_y":0.5}
                 display.add_widget(Player)
             
         for bot in range(g.amount_of_bots):
+            angle = radians((bot + ((g.amount_of_players-g.amount_of_bots)-1)) * angle_step)
+            center_x = 0.5 + 0.35 * cos(angle)
+            center_y = 0.5 + 0.35 * sin(angle)
             display = self.root.get_screen("InGame")
             Bot = Bot_Icon(f"Bot{bot + 1}",self.player_num_map[f"Bot{bot + 1}"])
-            Bot.pos_hint = {"center_x": (0.4 + ((bot + 1)/10)),"center_y":0.7}
+            Bot.pos_hint = {"center_x": center_x,"center_y": center_y}
             display.add_widget(Bot)
+
+    def deal_cards(self):
+        g = self.game_instance
+        g.distribute_cards()
+        g.Update_GameState()
+        widget = self.get_widget("deck","InGame")
+        for i in range((g.amount_of_players * 7)):
+            player_num = i%g.amount_of_players
+            card = widget.children[(g.amount_of_players * 7) - 1 - i]
+            if player_num == 0:
+                contain = self.get_widget("hand","InGame")
+                widget.remove_widget(card)
+                contain.add_widget(card)
+            else:
+                widget.remove_widget(card)
+
 
     def multi(self):
         print("multi")
 
     def solo(self):
         g = self.game_instance
-        print("Solo")
         self.output_deck()
         self.assign_player_num()
         g.Update_GameState()
         self.output_players(self.players[0])
+        self.deal_cards()
 
     def start(self):
         if len(self.players) == 1:

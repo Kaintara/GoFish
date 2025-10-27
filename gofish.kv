@@ -130,17 +130,16 @@
             pos_hint: {"center_x": 0.5,"center_y":0.5}
             size_hint_x: 0.2
             size_hint_y: 0.2
-        RelativeLayout:
-            md_bg_color: app.theme_cls.primaryColor
+        MDBoxLayout:
+            orientation: "horizontal"
             id: playerview
             adaptive_height: True
-            pos_hint: {"center_x": 0.5,"center_y":0.25}
+            pos_hint: {"center_x": 0.5,"center_y":0.1}
             size_hint_x: 1
-            size_hint_y: 0.4
-            MDLabel:
-                text: "Start!"
-                font_style: "cataway"
-                role: "large"
+            size_hint_y: 0.2
+            RelativeLayout:
+                id: hand
+                adaptive_height: True
             
 
 
