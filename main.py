@@ -219,12 +219,13 @@ class Deck_Cards(RelativeLayout):
                 parent.remove_widget(self)
                 parent.add_widget(self, index=0)
                 self.flip()
+                g.deck.remove(app.suit_rank(self.card))
                 g.hands[g.turn].append(app.suit_rank(self.card))
                 g.history.append((f'player{g.turn + 1}',g.hands[g.turn][-1],'draw'))
                 g.Update_GameState()
-                app.update_widgets()
                 g.turn = g.next_vaild_player(g.turn)
                 app.players_draw = False
+                app.update_widgets()
                 return True
         return super().on_touch_down(touch)
 
@@ -641,6 +642,19 @@ class GoFishApp(MDApp):
     def get_widget(self, widget, screen):
         return self.root.get_screen(screen).ids[widget]
     
+    def get_runtime_widget(self, widget):
+        if hasattr(self, "player_widget_map") and widget in self.player_widget_map:
+            return self.player_widget_map[widget]
+        try:
+            screen = self.root.get_screen("InGame")
+        except Exception:
+            return None
+        for child in screen.walk():
+            # match by id or name string
+            if getattr(child, "id", None) == widget or getattr(child, "name", None) == widget:
+                return child
+        return None
+    
     def back(self): #Back button
         sm = self.root
         if self.sm_stack[0] == sm.current:
@@ -747,12 +761,14 @@ class GoFishApp(MDApp):
                 Player.pos_hint = {"center_x": center_x,"center_y": center_y}
                 Player.id = self.players[player]
                 contain.add_widget(Player)
+                self.player_widget_map[Player.id] = Player
             else:
                 display = self.root.get_screen("InGame")
                 Player = Player_Icon(self.players[player],self.player_num_map[self.players[player]])
                 Player.id = self.players[player]
                 Player.pos_hint = {"center_x": 0.2,"center_y":0.5}
                 display.add_widget(Player)
+                self.player_widget_map[Player.id] = Player
             
         for bot in range(g.amount_of_bots):
             angle = radians((bot + ((g.amount_of_players-g.amount_of_bots)-1)) * angle_step)
@@ -763,6 +779,7 @@ class GoFishApp(MDApp):
             Bot.id = f"Bot{bot + 1}"
             Bot.pos_hint = {"center_x": center_x,"center_y": center_y}
             display.add_widget(Bot)
+            self.player_widget_map[Bot.id] = Bot
 
     def deal_cards(self): #Deals hand cards to the current player view
         g = self.game_instance
@@ -778,6 +795,7 @@ class GoFishApp(MDApp):
     def make_move(self,icon):
         g = self.game_instance
         if isinstance(icon,Bot_Icon):
+            print(g.state)
             Carou = self.get_widget("loop","Settings")
             difficulty = Carou.current_slide.text
             if difficulty == "Beginner":
@@ -803,17 +821,24 @@ class GoFishApp(MDApp):
                 self.players_turn = True
             return None
 
-    def update_widgets(self,playerview):
-        pass
+    def update_widgets(self):
+        dis = self.get_widget("deck","InGame")
+        hand = self.get_widget("hand","InGame")
+        dis.clear_widgets()
+        hand.clear_widgets()
+        self.deal_cards()
+        self.output_deck()
+
 
     def game_loop_solo(self):
         print("Game Started!")
         g = self.game_instance
         g.turn = random.randint(0,g.amount_of_players - 1)
         while not g.is_game_over():
-            icon = self.get_widget(self.playerandbots[g.turn],"InGame")
+            print(self.player_widget_map)
+            icon = self.get_runtime_widget(self.playerandbots[g.turn])
             icon.turn()
-            self.make_move()
+            self.make_move(icon)
             g.Update_GameState()
 
     def multi(self):

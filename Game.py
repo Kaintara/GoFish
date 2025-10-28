@@ -167,9 +167,10 @@ class Game:
             if card == x[0]:
                 Correct = True
                 game.history.append((f'player{(game.turn+1)}',x,'took',f'player{(target_player+1)}'))
-                game.Update_GameState()
                 game.hands[game.turn].append(x)
                 game.hands[target_player].remove(x)
+                game.check_for_sets()
+                game.Update_GameState()
         if not Correct:
             if game.shuffled_deck:
                 game.draw_card(game.turn)
@@ -189,6 +190,7 @@ class Game:
                 game.history.append((f'player{(game.turn+1)}',x,'took',f'player{(target_player+1)}'))
                 game.hands[game.turn].append(x)
                 game.hands[target_player].remove(x)
+                game.check_for_sets()
                 game.Update_GameState()
         if not Correct:
             return None
