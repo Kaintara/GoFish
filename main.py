@@ -33,7 +33,7 @@ from kivymd.uix.dialog import MDDialog, MDDialogHeadlineText, MDDialogButtonCont
 
 
 #Custom Buttons/Cards
-class Playing_Card_Back(MDCard):
+class Playing_Card_Back(MDCard): #Back of the Playing Cards
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None,None)
@@ -45,14 +45,14 @@ class Playing_Card_Back(MDCard):
         )
         self.add_widget(self.layout)
 
-class Theme_Playing_Card(MDCard):
+class Theme_Playing_Card(MDCard): #Playing Cards for the theme menu only
     def __init__(self,suit="",**kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None,None)
         self.size = ("64dp", "89dp")
         self.pos_hint = {"center_x": 0.5, "center_y": 0.5}
         self.suit = suit
-        self.bind(on_release = lambda x:app.change_theme(self.colour))
+        self.bind(on_release = lambda x:app.change_theme(self.colour)) #Changes the theme of the UI when this card is clicked
         app = MDApp.get_running_app()
         if self.suit == "cards-diamond" or self.suit == "cards-heart":
             self.colour = app.theme_cls.inversePrimaryColor
@@ -70,7 +70,7 @@ class Theme_Playing_Card(MDCard):
         )
         self.layout.add_widget(self.icon)
         self.add_widget(self.layout)
-    def change_colour(self):
+    def change_colour(self): #Changes the Colour of the different theme cards
         app = MDApp.get_running_app()
         self.layout.remove_widget(self.icon)
         self.icon = MDButtonIcon(
@@ -84,7 +84,7 @@ class Theme_Playing_Card(MDCard):
         )
         self.layout.add_widget(self.icon)
 
-class Card_Label(MDLabel):
+class Card_Label(MDLabel): #Rotates the text on the playing cards
      def __init__(self, **kwargs):
         super().__init__(**kwargs)
         with self.canvas.before:
@@ -93,7 +93,7 @@ class Card_Label(MDLabel):
         with self.canvas.after:
             PopMatrix()
             
-class Playing_Card(MDCard):
+class Playing_Card(MDCard): #Actual playing card for gameplay
     def __init__(self,suit_rank,**kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None,None)
@@ -140,6 +140,13 @@ class Playing_Card(MDCard):
             pos_hint = {"center_x":0.5, "center_y":0.5},
             on_release = lambda x:app.change_theme(self.colour)
         )
+        self.highlight = FitImage(
+            source='glow.png',
+            size_hint=(1.2,1.2),
+            opacity=0,
+            pos_hint={"center_x": 0.5, "center_y": 0.5}
+        )
+        self.layout.add_widget(self.highlight)
         self.layout.add_widget(self.icon)
         self.layout.add_widget(self.up_text)
         self.layout.add_widget(self.down_text)
@@ -148,8 +155,15 @@ class Playing_Card(MDCard):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             app = MDApp.get_running_app()
-            app.selected_rank = self.rank
-            app.selected = True
+            if app.selected_rank != self.rank and app.selected == False and app.selected_card != self:
+                app = MDApp.get_running_app()
+                app.selected_rank = self.rank
+                app.selected = True
+                self.highlight.opacity = 1
+            else:
+                app.selected_rank = ''
+                app.selected = False
+                self.highlight.opacity = 0
         return super().on_touch_down(touch)
 
 
@@ -350,7 +364,7 @@ class GoFishApp(MDApp):
 
     def __init__(self, **kwargs):
         self.game_instance = None
-        self.sm_stack = []
+        self.sm_stack = [] #Stack that stores what screens the player has been to go back
         self.colours = ['Lightpink', 'Pink', 'Crimson', 'Palevioletred', 'Lavenderblush', 'Hotpink', 'Deeppink', 'Mediumvioletred', 'Orchid', 'Fuchsia', 'Magenta', 'Darkmagenta', 'Purple', 'Violet', 'Plum', 'Thistle', 'Mediumorchid', 'Darkviolet', 'Darkorchid', 'Indigo', 'Blueviolet', 'Mediumpurple', 'Mediumslateblue', 'Darkslateblue', 'Slateblue', 'Blue', 'Mediumblue', 'Darkblue', 'Navy', 'Midnightblue', 'Lavender', 'Ghostwhite', 'Royalblue', 'Cornflowerblue', 'Lightsteelblue', 'Lightslategray', 'Lightslategrey', 'Slategray', 'Slategrey', 'Dodgerblue', 'Aliceblue', 'Steelblue', 'Lightskyblue', 'Skyblue', 'Deepskyblue', 'Lightblue', 'Powderblue', 'Cadetblue', 'Darkturquoise', 'Aqua', 'Cyan', 'Darkcyan', 'Teal', 'Darkslategray', 'Darkslategrey', 'Paleturquoise', 'Lightcyan', 'Azure', 'Mediumturquoise', 'Lightseagreen', 'Turquoise', 'Aquamarine', 'Mediumaquamarine', 'Mediumspringgreen', 'Springgreen', 'Mintcream', 'Mediumseagreen', 'Seagreen', 'Lime', 'Green', 'Darkgreen', 'Limegreen', 'Forestgreen', 'Lightgreen', 'Palegreen', 'Darkseagreen', 'Honeydew', 'Lawngreen', 'Chartreuse', 'Greenyellow', 'Darkolivegreen', 'Yellowgreen', 'Olivedrab', 'Yellow', 'Olive', 'Lightgoldenrodyellow', 'Lightyellow', 'Beige', 'Ivory', 'Darkkhaki', 'Palegoldenrod', 'Khaki', 'Lemonchiffon', 'Gold', 'Cornsilk', 'Goldenrod', 'Darkgoldenrod', 'Floralwhite', 'Oldlace', 'Wheat', 'Orange', 'Moccasin', 'Papayawhip', 'Blanchedalmond', 'Navajowhite', 'Antiquewhite', 'Tan', 'Burlywood', 'Darkorange', 'Bisque', 'Linen', 'Peru', 'Peachpuff', 'Sandybrown', 'Seashell', 'Saddlebrown', 'Chocolate', 'Sienna', 'Lightsalmon', 'Orangered', 'Coral', 'Darksalmon', 'Tomato', 'Salmon', 'Mistyrose', 'Red', 'Darkred', 'Maroon', 'Firebrick', 'Brown', 'Indianred', 'Lightcoral', 'Rosybrown', 'Snow', 'White', 'Whitesmoke', 'Gainsboro', 'Lightgray', 'Lightgrey', 'Silver', 'Darkgray', 'Darkgrey', 'Gray', 'Grey', 'Dimgray', 'Dimgrey', 'Black']
         self.colours_map = {
     "Aliceblue": (0.941, 0.973, 1.0, 1.0),
@@ -501,6 +515,12 @@ class GoFishApp(MDApp):
     "Yellow": (1.0, 1.0, 0.0, 1.0),
     "Yellowgreen": (0.604, 0.804, 0.196, 1.0)}
         self.suits = ["cards-spade","cards-diamond","cards-heart","cards-club"]
+        self.players = []
+        self.player_num_map = {}
+        self.selected_rank = ''
+        self.selected_card = None
+        self.selected = False
+        self.current_player_view = ''
         super().__init__(**kwargs)
     
     def build(self):
@@ -509,10 +529,6 @@ class GoFishApp(MDApp):
         self.theme_cls.primary_palette = "Red"
         self.theme_cls.primary_hue = "900"
         self.theme_cls.theme_style_switch_animation_duration = 0.4
-        self.players = []
-        self.player_num_map = {}
-        self.selected_rank = ''
-        self.selected = False
 
         Window.set_icon(("icon.png"))
         #App Default Font & Font Styles
@@ -550,6 +566,7 @@ class GoFishApp(MDApp):
         sm.current = "Menu"
         return sm
     
+    #Function to get the widget instance from a particular screen
     def get_widget(self, widget, screen):
         return self.root.get_screen(screen).ids[widget]
     
@@ -570,7 +587,7 @@ class GoFishApp(MDApp):
         else:
             self.sm_stack.insert(0, widget)
 
-    def switch_icon(self,widget):
+    def switch_icon(self,widget): #Switches the Dark/Light Mode icon based on which mode is selected
         if widget.name == "light":
             widget.icon = "weather-night"
             widget.name = "dark"
@@ -578,21 +595,20 @@ class GoFishApp(MDApp):
             widget.name = "light"
             widget.icon = "white-balance-sunny"
         
-    def change_theme(self,colour):
+    def change_theme(self,colour): #Changes the main colour theme
         self.theme_cls.primary_palette = colour
 
-    def on_start(self):
+    def on_start(self): #When the app starts this is run, preloads the theme section
         grid = self.get_widget("grid","Themes")
         for colour in self.colours:
             int = random.randint(0,3)
             card = Theme_Playing_Card(self.suits[int])
-            #card.md_bg_color = colour.lower() Needs to be fixed!!!
             card.colour = colour
             card.change_colour()
             grid.add_widget(card)
         return super().on_start()
     
-    def card_type(self,card):
+    def card_type(self,card): #Coverts cards to icon names for making playing cards
         if card[1] == "S":
             suit = "cards-spade"
         elif card[1] == "D":
@@ -607,15 +623,15 @@ class GoFishApp(MDApp):
             rank = card[0]
         return (suit,rank)
     
-    def left(self):
+    def left(self): #Goes left in the carousel
         Carou = self.get_widget("loop","Settings")
         Carou.load_previous()
 
-    def right(self):
+    def right(self): #Goes right in the carousel
         Carou = self.get_widget("loop","Settings")
         Carou.load_next()
 
-    def assign_player_num(self):
+    def assign_player_num(self): #Gives each player a player name which is used frequently in the Game.py code
         g = self.game_instance
         for i in range(g.amount_of_players):
             try:
@@ -623,7 +639,7 @@ class GoFishApp(MDApp):
             except:
                 self.player_num_map[f"Bot{(i-(g.amount_of_players-g.amount_of_bots-1))}"] = f"player{i+1}"
 
-    def output_deck(self):
+    def output_deck(self): #Outputs all the cards in the deck into the middle of the screen
         g = self.game_instance
         widget = self.get_widget("deck","InGame")
         for card in g.shuffled_deck:
@@ -632,14 +648,14 @@ class GoFishApp(MDApp):
             Card.rotate()
             widget.add_widget(Card)
     
-    def output_players(self,current_player):
+    def output_players(self): #Outputs all the player & bot icons around the deck
         g = self.game_instance
         angle_step = 180 / (g.amount_of_players-1)
         for player in range(g.amount_of_players-g.amount_of_bots):
             angle = radians(player * angle_step)
             center_x = 0.5 + 0.4 * cos(angle)
             center_y = 0.5 + 0.4 * sin(angle)
-            if self.players[player] == current_player:
+            if self.players[player] == self.current_player_view:
                 contain = self.get_widget("playerview","InGame")
                 Player = Player_Icon(self.players[player],self.player_num_map[self.players[player]])
                 Player.pos_hint = {"center_x": center_x,"center_y": center_y}
@@ -659,18 +675,30 @@ class GoFishApp(MDApp):
             Bot.pos_hint = {"center_x": center_x,"center_y": center_y}
             display.add_widget(Bot)
 
-    def deal_cards(self,current_player):
+    def deal_cards(self): #Deals hand cards to the current player view
         g = self.game_instance
+        hand = self.get_widget("hand","InGame")
         g.Update_GameState()
-        for card in g.hands[self.players.index(current_player)]:
+        for card in g.hands[self.players.index(self.current_player_view)]:
             Card = Playing_Card(self.card_type(card))
-            hand = self.get_widget("hand","InGame")
             hand.add_widget(Card)
+
+    def update_widgets(self,playerview):
+        pass
+
+    def game_loop(self):
+        print("Game Started!")
+        g = self.game_instance
+        g.turn = random.randint(0,g.amount_of_players - 1)
+        while not g.is_game_over():
+            g.Update_GameState()
+            self.update_widgets(self.current_player_view)
 
     def multi(self):
         print("multi")
 
     def solo(self):
+        self.current_player_view = self.players[0]
         g = self.game_instance
         g.shuffle_cards()
         g.distribute_cards()
@@ -678,27 +706,29 @@ class GoFishApp(MDApp):
         self.output_deck()
         self.assign_player_num()
         g.Update_GameState()
-        self.output_players(self.players[0])
-        self.deal_cards(self.players[0])
+        self.output_players()
+        self.deal_cards()
+        #self.game_loop()
         
 
-    def start(self):
+    def start(self): #Starts the game
         if len(self.players) == 1:
             self.game_instance = Game(4,3)
             self.solo()
         elif len(self.players) < 4:
             self.game_instance = Game(4,(4-len(self.players)))
+            self.multi()
         else:
             self.game_instance = Game(len(self.players),0)
+            self.multi()
     
-    def remove(self,widget): #Not finished
+    def remove(self,widget): #Removes the name of the player if it is incorrect/they are not playing etc..
         player = self.get_widget('Players','NewGame')
         self.players.remove(widget.children[1].text)
         player.remove_widget(widget)
 
-    def all_players(self,instance):
+    def all_players(self,instance): #Outputs the name inputted w/ a remove button if needed
         name = instance.text.strip()
-        print(name)
         if not name:
             return
         player = self.get_widget('Players','NewGame')
