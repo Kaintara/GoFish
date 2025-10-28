@@ -48,7 +48,7 @@ class Game:
     def shuffle_cards(game):
         shuffled_deck = game.deck[:]
         random.shuffle(shuffled_deck)
-        game.shuffled_deck = shuffled_deck #replace this with random.shuffle()
+        game.shuffled_deck = shuffled_deck
             
     def distribute_cards(game):
         players = game.hands
@@ -151,6 +151,47 @@ class Game:
                 game.turn = game.next_vaild_player(playernum)
             if any(len(hand) == 0 for hand in game.hands):
                 game.turn = game.next_vaild_player(playernum)
+
+    def game_turn_bot(game,move):
+        if not move:
+            if game.shuffled_deck:
+                game.draw_card(game.turn)
+            game.turn = game.next_vaild_player(game.turn)
+            return
+        game.history.append(move)
+        game.Update_GameState()
+        target_player = int(move[0][6:]) - 1
+        card = move[1]
+        Correct = False
+        for x in game.hands[target_player][:]:
+            if card == x[0]:
+                Correct = True
+                game.history.append((f'player{(game.turn+1)}',x,'took',f'player{(target_player+1)}'))
+                game.Update_GameState()
+                game.hands[game.turn].append(x)
+                game.hands[target_player].remove(x)
+        if not Correct:
+            if game.shuffled_deck:
+                game.draw_card(game.turn)
+                game.turn = game.next_vaild_player(game.turn)
+            if any(len(hand) == 0 for hand in game.hands):
+                game.turn = game.next_vaild_player(game.turn)
+
+    def game_turn_player(game,move):
+        game.history.append(move)
+        game.Update_GameState()
+        target_player = int(move[0][6:]) - 1
+        card = move[1]
+        Correct = False
+        for x in game.hands[target_player][:]:
+            if card == x[0]:
+                Correct = True
+                game.history.append((f'player{(game.turn+1)}',x,'took',f'player{(target_player+1)}'))
+                game.hands[game.turn].append(x)
+                game.hands[target_player].remove(x)
+                game.Update_GameState()
+        if not Correct:
+            return None
 
     def check_end(game):
         for i in range(game.amount_of_players):

@@ -176,29 +176,31 @@ class Playing_Card(MDCard): #Actual playing card for gameplay
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             app = MDApp.get_running_app()
-            if app.selected_card != self:
-                if app.selected_card:
-                    app.selected_card.highlight.opacity = 0
-                    app.selected_card = self
+            if app.players_turn:
+                if app.selected_card != self:
+                    if app.selected_card:
+                        app.selected_card.highlight.opacity = 0
+                        app.selected_card = self
+                    else:
+                        app.selected_card = self
+                    app.selected_rank = self.rank
+                    app.selected = True
+                    self.highlight.opacity = 1
                 else:
-                    app.selected_card = self
-                app.selected_rank = self.rank
-                app.selected = True
-                self.highlight.opacity = 1
-            else:
-                app.selected_rank = ''
-                app.selected = False
-                self.highlight.opacity = 0
+                    app.selected_rank = ''
+                    app.selected = False
+                    self.highlight.opacity = 0
         return super().on_touch_down(touch)
 
 
 class Deck_Cards(RelativeLayout):
     def __init__(self,suit_rank,**kwargs):
         super().__init__(**kwargs)
+        self.card = suit_rank
         self.size_hint = (None,None)
         self.size = (dp(64),dp(89))
         self.pos_hint = {"center_x": 0.5, "center_y":0.5}
-        self.card_front = Playing_Card(suit_rank)
+        self.card_front = Playing_Card(self.card)
         self.card_back = Playing_Card_Back()
         self.buffer = Playing_Card_Back()
         self.add_widget(self.buffer)
@@ -211,12 +213,17 @@ class Deck_Cards(RelativeLayout):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             app = MDApp.get_running_app()
+            g = app.game_instance
             if app.players_draw == True:
                 parent = self.parent
                 parent.remove_widget(self)
                 parent.add_widget(self, index=0)
                 self.flip()
-                #More code goes here to give player the card... & End their turn
+                g.hands[g.turn].append(app.suit_rank(self.card))
+                g.history.append((f'player{g.turn + 1}',g.hands[g.turn][-1],'draw'))
+                g.Update_GameState()
+                app.update_widgets()
+                g.turn = g.next_vaild_player(g.turn)
                 app.players_draw = False
                 return True
         return super().on_touch_down(touch)
@@ -287,7 +294,15 @@ class Bot_Icon(MDCard):
             g = app.game_instance
             if app.selected and app.players[g.turn] != self.id:
                 move = (self.player,app.selected_rank,'ask') 
-                self.md_bg_color = app.theme_cls.inversePrimaryColor                 
+                self.md_bg_color = app.theme_cls.inversePrimaryColor   
+                moves = g.game_turn_player(move)
+                if not moves:
+                    app.player_turn = False        
+                    app.player_draw = True
+                app.update_widgets(app.current_player_view)
+                app.selected_rank = ''
+                app.selected_card = None
+                app.selected = False
             else:
                 g = app.game_instance
                 MDDialog(MDDialogIcon(icon="account-circle"),
@@ -348,7 +363,15 @@ class Player_Icon(MDCard): #How to ask for cards.
             g = app.game_instance
             if app.selected and app.players[g.turn] != self.id and app.current_player_view != self.id:
                 move = (self.player,app.selected_rank,'ask') 
-                self.md_bg_color = app.theme_cls.inversePrimaryColor
+                self.md_bg_color = app.theme_cls.inversePrimaryColor   
+                moves = g.game_turn_player(move)
+                if not moves:
+                    app.player_turn = False        
+                    app.player_draw = True
+                app.update_widgets(app.current_player_view)
+                app.selected_rank = ''
+                app.selected_card = None
+                app.selected = False
             else:
                 MDDialog(MDDialogIcon(icon="account-circle"),
             MDDialogHeadlineText(
@@ -559,6 +582,7 @@ class GoFishApp(MDApp):
     "Yellow": (1.0, 1.0, 0.0, 1.0),
     "Yellowgreen": (0.604, 0.804, 0.196, 1.0)}
         self.suits = ["cards-spade","cards-diamond","cards-heart","cards-club"]
+        self.playerandbots = []
         self.players = []
         self.players_turn = False
         self.players_draw = False
@@ -567,6 +591,7 @@ class GoFishApp(MDApp):
         self.selected_card = None
         self.selected = False
         self.current_player_view = ''
+        self.player_widget_map = {}
         super().__init__(**kwargs)
     
     def build(self):
@@ -669,6 +694,21 @@ class GoFishApp(MDApp):
             rank = card[0]
         return (suit,rank)
     
+    def suit_rank(self,card):
+        if card[0] == "cards-spade":
+            suit = "S"
+        elif card[0] == "cards-diamond":
+            suit = "D"
+        elif card[0] == "cards-club":
+            suit = "C"
+        elif card[0] == "cards-heart":
+            suit = "H"
+        if card[1] == "10":
+            rank = "1"
+        else:
+            rank = card[1]
+        return f"{rank}{suit}"
+    
     def left(self): #Goes left in the carousel
         Carou = self.get_widget("loop","Settings")
         Carou.load_previous()
@@ -705,10 +745,12 @@ class GoFishApp(MDApp):
                 contain = self.get_widget("playerview","InGame")
                 Player = Player_Icon(self.players[player],self.player_num_map[self.players[player]])
                 Player.pos_hint = {"center_x": center_x,"center_y": center_y}
+                Player.id = self.players[player]
                 contain.add_widget(Player)
             else:
                 display = self.root.get_screen("InGame")
                 Player = Player_Icon(self.players[player],self.player_num_map[self.players[player]])
+                Player.id = self.players[player]
                 Player.pos_hint = {"center_x": 0.2,"center_y":0.5}
                 display.add_widget(Player)
             
@@ -718,6 +760,7 @@ class GoFishApp(MDApp):
             center_y = 0.5 + 0.35 * sin(angle)
             display = self.root.get_screen("InGame")
             Bot = Bot_Icon(f"Bot{bot + 1}",self.player_num_map[f"Bot{bot + 1}"])
+            Bot.id = f"Bot{bot + 1}"
             Bot.pos_hint = {"center_x": center_x,"center_y": center_y}
             display.add_widget(Bot)
 
@@ -730,7 +773,7 @@ class GoFishApp(MDApp):
             hand.add_widget(Card)
 
     def player_turn():
-
+        pass #code goes here lolll
 
     def make_move(self,icon):
         g = self.game_instance
@@ -738,17 +781,27 @@ class GoFishApp(MDApp):
             Carou = self.get_widget("loop","Settings")
             difficulty = Carou.current_slide.text
             if difficulty == "Beginner":
-                return g.beginner_call()
+                g.game_turn_bot(g.beginner_call())
+                self.update_widgets(self.current_player_view)
             elif difficulty == "Easy":
-                return g.easy_call()
+                g.game_turn_bot(g.easy_call())
+                self.update_widgets(self.current_player_view)
             elif difficulty == "Medium":
-                return g.medium_call()
+                g.game_turn_bot(g.medium_call())
+                self.update_widgets(self.current_player_view)
             elif difficulty == "Hard":
-                return g.hard_call()
+                g.game_turn_bot(g.hard_call())
+                self.update_widgets(self.current_player_view)
             elif difficulty == "Expert":
-                return g.expert_call()
+                g.game_turn_bot(g.expert_call())
+                self.update_widgets(self.current_player_view)
         else:
-            
+            moves = g.get_valid_moves(self.players.index(self.current_player_view))
+            if not moves:
+                self.players_draw = True
+            else:
+                self.players_turn = True
+            return None
 
     def update_widgets(self,playerview):
         pass
@@ -758,10 +811,10 @@ class GoFishApp(MDApp):
         g = self.game_instance
         g.turn = random.randint(0,g.amount_of_players - 1)
         while not g.is_game_over():
-            icon = self.get_widget(self.players[g.turn],"InGame")
+            icon = self.get_widget(self.playerandbots[g.turn],"InGame")
             icon.turn()
+            self.make_move()
             g.Update_GameState()
-            self.update_widgets(self.current_player_view)
 
     def multi(self):
         print("multi")
@@ -771,6 +824,7 @@ class GoFishApp(MDApp):
         g = self.game_instance
         g.shuffle_cards()
         g.distribute_cards()
+        g.check_for_sets()
         g.sort_cards()
         self.output_deck()
         self.assign_player_num()
@@ -783,12 +837,18 @@ class GoFishApp(MDApp):
     def start(self): #Starts the game
         if len(self.players) == 1:
             self.game_instance = Game(4,3)
+            self.playerandbots = [self.players[0],"Bot1","Bot2","Bot3"]
             self.solo()
         elif len(self.players) < 4:
             self.game_instance = Game(4,(4-len(self.players)))
+            for x in self.players:
+                self.playerandbots.append(x)
+            for i in range(4-len(self.players)):
+                self.playerandbots.append(f"Bot{i+1}")
             self.multi()
         else:
             self.game_instance = Game(len(self.players),0)
+            self.playerandbots = self.players
             self.multi()
     
     def remove(self,widget): #Removes the name of the player if it is incorrect/they are not playing etc..
