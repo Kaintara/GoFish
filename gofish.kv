@@ -138,12 +138,11 @@
             pos_hint: {"center_x": 0.5,"center_y":0.1}
             size_hint_x: 1
             size_hint_y: 0.2
-            MDBoxLayout:
+            HandLayout:
                 id: hand
                 orientation: "horizontal"
-                adaptive_size: True
                 pos_hint: {"left": 1}
-                spacing: -self.width * 0.08
+                width: (self.parent.width - dp(100))
             
 
 <Rules>:

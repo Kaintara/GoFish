@@ -33,6 +33,27 @@ from kivymd.uix.dialog import MDDialog, MDDialogHeadlineText, MDDialogButtonCont
 
 
 #Custom Buttons/Cards
+class HandLayout(MDBoxLayout):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bind(width=self.update_spacing, children=self.update_spacing)
+
+    def update_spacing(self, *args):
+        n = len(self.children)
+        if n <= 1:
+            self.spacing = 0
+        else:
+            required = n * dp(64)
+            avail = self.width
+            desired = (avail - required) / (n - 1)
+            max_overlap = -dp(64) * 0.75   
+            max_spread = dp(64) * 0.5 
+            if desired < max_overlap:
+                desired = max_overlap
+            elif desired > max_spread:
+                desired = max_spread
+            self.spacing = desired
+
 class Playing_Card_Back(MDCard): #Back of the Playing Cards
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -155,8 +176,12 @@ class Playing_Card(MDCard): #Actual playing card for gameplay
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             app = MDApp.get_running_app()
-            if app.selected_rank != self.rank and app.selected == False and app.selected_card != self:
-                app = MDApp.get_running_app()
+            if app.selected_card != self:
+                if app.selected_card:
+                    app.selected_card.highlight.opacity = 0
+                    app.selected_card = self
+                else:
+                    app.selected_card = self
                 app.selected_rank = self.rank
                 app.selected = True
                 self.highlight.opacity = 1
@@ -225,14 +250,6 @@ class Deck_Cards(RelativeLayout):
             self.rotate = Rotate(angle=self.angle, origin=self.center)
         with self.canvas.after:
             PopMatrix()
-
-    def un_rotate(self, *args):
-        with self.canvas.before:
-            PushMatrix()
-            self.angle = 0
-            self.rotate = Rotate(angle=self.angle, origin=self.center)
-        with self.canvas.after:
-            PopMatrix()
  
 
 class Bot_Icon(MDCard):
@@ -264,8 +281,7 @@ class Bot_Icon(MDCard):
         if self.collide_point(*touch.pos):
             app = MDApp.get_running_app()
             if app.selected:
-                move = (self.player,app.selected_rank,'ask')
-                #if move in g.
+                move = (self.player,app.selected_rank,'ask')                   
             else:
                 g = app.game_instance
                 MDDialog(MDDialogIcon(icon="account-circle"),
@@ -682,6 +698,12 @@ class GoFishApp(MDApp):
         for card in g.hands[self.players.index(self.current_player_view)]:
             Card = Playing_Card(self.card_type(card))
             hand.add_widget(Card)
+
+    def vaildate_move(self):
+        pass
+
+    def make_move(self):
+        pass
 
     def update_widgets(self,playerview):
         pass
