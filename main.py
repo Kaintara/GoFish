@@ -210,11 +210,15 @@ class Deck_Cards(RelativeLayout):
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
-            parent = self.parent
-            parent.remove_widget(self)
-            parent.add_widget(self, index=0)
-            self.flip() 
-            return True
+            app = MDApp.get_running_app()
+            if app.players_draw == True:
+                parent = self.parent
+                parent.remove_widget(self)
+                parent.add_widget(self, index=0)
+                self.flip()
+                #More code goes here to give player the card... & End their turn
+                app.players_draw = False
+                return True
         return super().on_touch_down(touch)
 
 
@@ -257,7 +261,7 @@ class Bot_Icon(MDCard):
         super().__init__(**kwargs)
         app = MDApp.get_running_app()
         g = app.game_instance
-        self.name = name
+        self.id = name
         self.player = playernum
         self.size = (dp(100),dp(100))
         self.size_hint = (None, None)
@@ -280,8 +284,10 @@ class Bot_Icon(MDCard):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             app = MDApp.get_running_app()
-            if app.selected:
-                move = (self.player,app.selected_rank,'ask')                   
+            g = app.game_instance
+            if app.selected and app.players[g.turn] != self.id:
+                move = (self.player,app.selected_rank,'ask') 
+                self.md_bg_color = app.theme_cls.inversePrimaryColor                 
             else:
                 g = app.game_instance
                 MDDialog(MDDialogIcon(icon="account-circle"),
@@ -300,13 +306,23 @@ class Bot_Icon(MDCard):
                 markup = True,
             )).open()
         return super().on_touch_down(touch)
+    
+    def turn(self):
+        app = MDApp.get_running_app()
+        self.md_bg_color = app.theme_cls.inversePrimaryColor
+
+    def un_turn(self):
+        app = MDApp.get_running_app()
+        self.md_bg_color = app.theme_cls.inversePrimaryColor
+
 
 class Player_Icon(MDCard): #How to ask for cards.
     def __init__(self,name,playernum,**kwargs):
         super().__init__(**kwargs)
         app = MDApp.get_running_app()
         g = app.game_instance
-        self.name = name
+        self.turn = False
+        self.id = name
         self.player = playernum
         self.size = (dp(100),dp(100))
         self.size_hint = (None, None)
@@ -330,22 +346,34 @@ class Player_Icon(MDCard): #How to ask for cards.
         if self.collide_point(*touch.pos):
             app = MDApp.get_running_app()
             g = app.game_instance
-            MDDialog(MDDialogIcon(icon="account-circle"),
-        MDDialogHeadlineText(
-            text=self.name,
-            halign="center",
-            font_style= "cataway",
-            role="medium",
-        ),
-        MDDialogSupportingText(
-            text=f"- Set Count: {len(g.state["sets"][self.player])}\n- No. of Cards in Hand: {len(g.state["hands"][self.player])}",
-            halign="left",
-            font_style= "cataway",
-            theme_font_size = "Custom",
-            font_size = dp(20),
-            markup = True,
-        )).open()
-        return super().on_touch_down(touch)
+            if app.selected and app.players[g.turn] != self.id and app.current_player_view != self.id:
+                move = (self.player,app.selected_rank,'ask') 
+                self.md_bg_color = app.theme_cls.inversePrimaryColor
+            else:
+                MDDialog(MDDialogIcon(icon="account-circle"),
+            MDDialogHeadlineText(
+                text=self.name,
+                halign="center",
+                font_style= "cataway",
+                role="medium",
+            ),
+            MDDialogSupportingText(
+                text=f"- Set Count: {len(g.state["sets"][self.player])}\n- No. of Cards in Hand: {len(g.state["hands"][self.player])}",
+                halign="left",
+                font_style= "cataway",
+                theme_font_size = "Custom",
+                font_size = dp(20),
+                markup = True,
+            )).open()
+            return super().on_touch_down(touch)
+    
+    def turn(self):
+        app = MDApp.get_running_app()
+        self.md_bg_color = app.theme_cls.inversePrimaryColor
+
+    def un_turn(self):
+        app = MDApp.get_running_app()
+        self.md_bg_color = app.theme_cls.inversePrimaryColor
 
         
 
@@ -532,6 +560,8 @@ class GoFishApp(MDApp):
     "Yellowgreen": (0.604, 0.804, 0.196, 1.0)}
         self.suits = ["cards-spade","cards-diamond","cards-heart","cards-club"]
         self.players = []
+        self.players_turn = False
+        self.players_draw = False
         self.player_num_map = {}
         self.selected_rank = ''
         self.selected_card = None
@@ -699,20 +729,37 @@ class GoFishApp(MDApp):
             Card = Playing_Card(self.card_type(card))
             hand.add_widget(Card)
 
-    def vaildate_move(self):
-        pass
+    def player_turn():
 
-    def make_move(self):
-        pass
+
+    def make_move(self,icon):
+        g = self.game_instance
+        if isinstance(icon,Bot_Icon):
+            Carou = self.get_widget("loop","Settings")
+            difficulty = Carou.current_slide.text
+            if difficulty == "Beginner":
+                return g.beginner_call()
+            elif difficulty == "Easy":
+                return g.easy_call()
+            elif difficulty == "Medium":
+                return g.medium_call()
+            elif difficulty == "Hard":
+                return g.hard_call()
+            elif difficulty == "Expert":
+                return g.expert_call()
+        else:
+            
 
     def update_widgets(self,playerview):
         pass
 
-    def game_loop(self):
+    def game_loop_solo(self):
         print("Game Started!")
         g = self.game_instance
         g.turn = random.randint(0,g.amount_of_players - 1)
         while not g.is_game_over():
+            icon = self.get_widget(self.players[g.turn],"InGame")
+            icon.turn()
             g.Update_GameState()
             self.update_widgets(self.current_player_view)
 
@@ -730,7 +777,7 @@ class GoFishApp(MDApp):
         g.Update_GameState()
         self.output_players()
         self.deal_cards()
-        #self.game_loop()
+        self.game_loop_solo()
         
 
     def start(self): #Starts the game
