@@ -67,6 +67,7 @@ class Game:
         print(card)
         remove = [card+'D',card+'S',card+'H',card+'C']
         print(remove)
+        print(hand)
         for card in remove:
             hand.remove(card)
 
@@ -192,8 +193,10 @@ class Game:
                 game.hands[target_player].remove(x)
                 game.check_for_sets()
                 game.Update_GameState()
-        if not Correct:
-            return None
+        if Correct:
+            return True
+        else:
+            return False
 
     def check_end(game):
         for i in range(game.amount_of_players):

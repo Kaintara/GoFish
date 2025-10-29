@@ -21,7 +21,7 @@ from kivy.clock import Clock
 from kivymd.app import MDApp
 from kivymd.uix.screenmanager import MDScreenManager
 from kivymd.uix.screen import MDScreen
-from kivymd.uix.button import MDButton, MDButtonIcon, MDIconButton
+from kivymd.uix.button import MDButton, MDButtonIcon, MDIconButton, MDButtonText
 from kivymd.uix.behaviors import RotateBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.card import MDCard
@@ -219,14 +219,6 @@ class Deck_Cards(RelativeLayout):
                 parent.remove_widget(self)
                 parent.add_widget(self, index=0)
                 self.flip()
-                g.deck.remove(app.suit_rank(self.card))
-                g.hands[g.turn].append(app.suit_rank(self.card))
-                g.history.append((f'player{g.turn + 1}',g.hands[g.turn][-1],'draw'))
-                g.Update_GameState()
-                g.turn = g.next_vaild_player(g.turn)
-                app.player_draw = False
-                app.update_widgets()
-                app.
         return super().on_touch_down(touch)
 
 
@@ -254,6 +246,18 @@ class Deck_Cards(RelativeLayout):
         anim2.bind(on_complete=lambda *_: finish_callback())
 
         (anim1 + anim2).start(self)
+        
+        app = MDApp.get_running_app()
+        g = app.game_instance
+        g.deck.remove(app.suit_rank(self.card))
+        g.hands[g.turn].append(app.suit_rank(self.card))
+        g.check_for_sets()
+        g.history.append((f'player{g.turn + 1}',g.hands[g.turn][-1],'draw'))
+        g.Update_GameState()
+        g.turn = g.next_vaild_player(g.turn)
+        app.player_draw = False
+        app.update_widgets()
+        app.end_player_turn()
 
     def rotate(self, *args):
         with self.canvas.before:
@@ -589,6 +593,7 @@ class GoFishApp(MDApp):
         self.selected = False
         self.current_player_view = ''
         self.player_widget_map = {}
+        self.dialog = ''
         super().__init__(**kwargs)
     
     def build(self):
@@ -786,6 +791,43 @@ class GoFishApp(MDApp):
             Card = Playing_Card(self.card_type(card))
             hand.add_widget(Card)
 
+    def determine_turn_dialog(self):
+        self.dialog = ["PLayer_name's Turn! Missed/Hit!",'...']
+
+    def close_turn_dialog(self):
+        if hasattr(self, "turn_dialog") and self.turn_dialog:
+            self.turn_dialog.dismiss()
+            self.turn_dialog = None
+            Clock.schedule_once(self.next_turn, 0.5)
+
+    def show_turn_dialog(self):
+        if hasattr(self, "turn_dialog") and self.turn_dialog:
+            self.turn_dialog.dismiss()
+
+        self.determine_turn_dialog()
+        self.turn_dialog = MDDialog(
+            MDDialogIcon(icon="script-text-outline"),
+            MDDialogHeadlineText(text=self.dialog[0],
+                halign="center",
+                font_style= "cataway",
+                role="medium",),
+            MDDialogSupportingText(text=self.dialog[1],
+                halign="left",
+                font_style= "cataway",
+                theme_font_size = "Custom",
+                font_size = dp(20),
+                markup = True,),
+                MDDialogButtonContainer(MDButton(
+                    MDButtonText(text="Got it!", font_style = "cataway", role = "small"),
+                    MDButtonIcon(icon="check-outline"),
+                    style = "tonal",
+                    pos_hint = {"center_x":0.5},
+                    on_release = lambda x:self.close_turn_dialog()
+                )),
+            auto_dismiss = False
+        )
+        self.turn_dialog.open()
+
     def make_move(self,icon):
         g = self.game_instance
         if isinstance(icon,Bot_Icon):
@@ -808,7 +850,7 @@ class GoFishApp(MDApp):
                 g.game_turn_bot(g.expert_call())
                 self.update_widgets()
             g.Update_GameState()
-            Clock.schedule_once(self.next_turn, 0.5)
+            self.show_turn_dialog()
         else:
             moves = g.get_valid_moves(self.players.index(self.current_player_view))
             if not moves:
@@ -839,7 +881,6 @@ class GoFishApp(MDApp):
         
         print(f"Turn {g.turn} — {self.playerandbots[g.turn]}")
         
-        print(self.player_widget_map)
         icon = self.get_runtime_widget(self.playerandbots[g.turn])
         icon.highlight()
         self.make_move(icon)
@@ -849,13 +890,6 @@ class GoFishApp(MDApp):
         g = self.game_instance
         g.turn = random.randint(0,len(self.playerandbots) - 1)
         self.next_turn()
-
-        #Clock.schedule_interval(self.update_game_loop, )
-            #print(self.player_widget_map)
-            #icon = self.get_runtime_widget(self.playerandbots[g.turn])
-            #icon.turn()
-            #self.make_move(icon)
-            #g.Update_GameState()
 
     def multi(self):
         print("multi")

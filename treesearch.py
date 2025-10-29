@@ -110,15 +110,14 @@ class GameEnvironment:
 
     def get_legal_moves(game,state):
         asks = []
-        player = state["current_player"][0]
-        player_name = f"player{player + 1}"
+        index, player_name = state["current_player"]
         hand = state["hands"][player_name]
         for x in hand:
             asks.append(x[0])
         asks = list(dict.fromkeys(asks))
         available = []
         for i in range(game.amount_of_players):
-            if i != (player) and len(state["hands"][f'player{i+1}']) > 0:
+            if f"player{i+1}" != player_name and len(state["hands"][f'player{i+1}']) > 0:
                  available.append(i)
         moves = []
         for card in asks:
@@ -228,11 +227,13 @@ def one_level_mcts(root_state,root_player,game_env,iterations):
         det_root = game_env.determinization(root_state)
         root_node = Node(det_root, parent=None, move_from_parent=None)
         root_node.untried_moves = game_env.get_legal_moves(root_node.state)
+        print(root_node.untried_moves)
         for move in root_node.untried_moves:
             child_state = game_env.apply_move(det_root, move)
             child_node = Node(child_state, root_node, move)
             root_node.children.append(child_node)
             child_node.untried_moves = []
+        print(root_node.children)
         for _ in range(iterations):
                 child = random.choice(root_node.children)
                 if not child:
