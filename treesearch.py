@@ -41,7 +41,6 @@ class GameEnvironment:
             if x[2] == 'draw':
                 s['history'].remove(x)
         history = s["history"][-(game.amount_of_players *2):]
-        print(history)
         Ai = state["current_player"][1]
         known_hands = {k: [] for k, a in s["hands"].items() if k != Ai}
         auto_moves = []
@@ -70,7 +69,7 @@ class GameEnvironment:
         Ai = copied["current_player"][1]
         hands = {k: v for k, v in copied["hands"].items() if k != Ai}
 
-        Determined_hands = {k: [] for k, a in copied["hands"].items() if k != Ai}
+        Determined_hands = {k: [] for k in copied["hands"].keys()}
         Determined_hands[f"{Ai}"] = copied["hands"][Ai]
 
         deck = copied["deck"][:]
@@ -82,7 +81,7 @@ class GameEnvironment:
             for i in range(game.amount_of_players):
                 if f'player{i}' != Ai:
                     for x in range(0,8):
-                        Determined_hands[f'player{i+1}'] = deck.pop()
+                        Determined_hands[f'player{i+1}'].append(deck.pop())
 
         for i in history:
             if i[2] == 'took' and i[0] != Ai:
@@ -147,11 +146,9 @@ class GameEnvironment:
         current_index = s["current_player"][0]
         current_name = f"player{current_index + 1}"
         target_player, rank, action = move
-        print(move)
         history = s["history"]
         history.append(move)
         asked_hand = s["hands"][target_player]
-        print(asked_hand)
         Correct = False
         for card in asked_hand:
             if rank == card[0]:
@@ -231,7 +228,6 @@ def one_level_mcts(root_state,root_player,game_env,iterations):
         det_root = game_env.determinization(root_state)
         root_node = Node(det_root, parent=None, move_from_parent=None)
         root_node.untried_moves = game_env.get_legal_moves(root_node.state)
-        print(root_node.untried_moves)
         for move in root_node.untried_moves:
             child_state = game_env.apply_move(det_root, move)
             child_node = Node(child_state, root_node, move)
@@ -331,9 +327,3 @@ def three_level_mcts(root_state,root_player,game_env,iterations):
                     first_child.visits = sum(child.visits for child in first_child.children)
                     first_child.value = sum(child.value for child in first_child.children)
         return (root_node.best_child(1.4)).move_from_parent
-
-env = GameEnvironment(4)
-dt=env.determinization({'hands': {'player1': ['2S', '4S', '6S', '7C', '8D', '9H', 'QC', 'AD'], 'player2': ['3C', '3H', '3S', '4H', '7D', 'JH', 'QD', 'AS'], 'player3': ['2C', '4C', '5C', '6C', '9D', '9C', 'KS', 'KD'], 'player4': ['2D', '2H', '7S', '8H', '9S', '1H', 'KH', 'KC']}, 'sets': {'player1': [], 'player2': [], 'player3': [], 'player4': []}, 'deck': ['JC', 'AC', '4D', '6D', '1D', 'QH', '5D', '3D', 'QS', '8C', '1C', 'JD', '8S', '7H', 'JS', '5H', '6H', 'AH', '1S', '5S'], 'current_player': (0, 'player1'), 'history': []})
-print(dt)
-one_level_mcts({'hands': {'player1': ['2S', '4S', '6S', '7C', '8D', '9H', 'QC', 'AD'], 'player2': ['3C', '3H', '3S', '4H', '7D', 'JH', 'QD', 'AS'], 'player3': ['2C', '4C', '5C', '6C', '9D', '9C', 'KS', 'KD'], 'player4': ['2D', '2H', '7S', '8H', '9S', '1H', 'KH', 'KC']}, 'sets': {'player1': [], 'player2': [], 'player3': [], 'player4': []}, 'deck': ['JC', 'AC', '4D', '6D', '1D', 'QH', '5D', '3D', 'QS', '8C', '1C', 'JD', '8S', '7H', 'JS', '5H', '6H', 'AH', '1S', '5S'], 'current_player': (0, 'player1'), 'history': []},0,env,2)
-

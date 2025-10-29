@@ -176,7 +176,7 @@ class Playing_Card(MDCard): #Actual playing card for gameplay
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             app = MDApp.get_running_app()
-            if app.players_turn:
+            if app.player_turn:
                 if app.selected_card != self:
                     if app.selected_card:
                         app.selected_card.highlight.opacity = 0
@@ -214,7 +214,7 @@ class Deck_Cards(RelativeLayout):
         if self.collide_point(*touch.pos):
             app = MDApp.get_running_app()
             g = app.game_instance
-            if app.players_draw == True:
+            if app.player_draw:
                 parent = self.parent
                 parent.remove_widget(self)
                 parent.add_widget(self, index=0)
@@ -224,9 +224,9 @@ class Deck_Cards(RelativeLayout):
                 g.history.append((f'player{g.turn + 1}',g.hands[g.turn][-1],'draw'))
                 g.Update_GameState()
                 g.turn = g.next_vaild_player(g.turn)
-                app.players_draw = False
+                app.player_draw = False
                 app.update_widgets()
-                return True
+                app.
         return super().on_touch_down(touch)
 
 
@@ -295,12 +295,14 @@ class Bot_Icon(MDCard):
             g = app.game_instance
             if app.selected and app.players[g.turn] != self.id:
                 move = (self.player,app.selected_rank,'ask') 
+                print(move)
                 self.md_bg_color = app.theme_cls.inversePrimaryColor   
                 moves = g.game_turn_player(move)
                 if not moves:
+                    print("Wrong")
                     app.player_turn = False        
                     app.player_draw = True
-                app.update_widgets(app.current_player_view)
+                app.update_widgets()
                 app.selected_rank = ''
                 app.selected_card = None
                 app.selected = False
@@ -308,7 +310,7 @@ class Bot_Icon(MDCard):
                 g = app.game_instance
                 MDDialog(MDDialogIcon(icon="account-circle"),
             MDDialogHeadlineText(
-                text=self.name,
+                text=self.id,
                 halign="center",
                 font_style= "cataway",
                 role="medium",
@@ -323,13 +325,10 @@ class Bot_Icon(MDCard):
             )).open()
         return super().on_touch_down(touch)
     
-    def turn(self):
+    def highlight(self):
         app = MDApp.get_running_app()
-        self.md_bg_color = app.theme_cls.inversePrimaryColor
-
-    def un_turn(self):
-        app = MDApp.get_running_app()
-        self.md_bg_color = app.theme_cls.inversePrimaryColor
+        anim = Animation(md_bg_color=app.theme_cls.inversePrimaryColor, duration=2)
+        anim.start(self)
 
 
 class Player_Icon(MDCard): #How to ask for cards.
@@ -369,14 +368,14 @@ class Player_Icon(MDCard): #How to ask for cards.
                 if not moves:
                     app.player_turn = False        
                     app.player_draw = True
-                app.update_widgets(app.current_player_view)
+                app.update_widgets()
                 app.selected_rank = ''
                 app.selected_card = None
                 app.selected = False
             else:
                 MDDialog(MDDialogIcon(icon="account-circle"),
             MDDialogHeadlineText(
-                text=self.name,
+                text=self.id,
                 halign="center",
                 font_style= "cataway",
                 role="medium",
@@ -391,13 +390,10 @@ class Player_Icon(MDCard): #How to ask for cards.
             )).open()
             return super().on_touch_down(touch)
     
-    def turn(self):
+    def highlight(self):
         app = MDApp.get_running_app()
-        self.md_bg_color = app.theme_cls.inversePrimaryColor
-
-    def un_turn(self):
-        app = MDApp.get_running_app()
-        self.md_bg_color = app.theme_cls.inversePrimaryColor
+        anim = Animation(md_bg_color=app.theme_cls.inversePrimaryColor, duration=2)
+        anim.start(self)
 
         
 
@@ -585,8 +581,8 @@ class GoFishApp(MDApp):
         self.suits = ["cards-spade","cards-diamond","cards-heart","cards-club"]
         self.playerandbots = []
         self.players = []
-        self.players_turn = False
-        self.players_draw = False
+        self.player_turn = False
+        self.player_draw = False
         self.player_num_map = {}
         self.selected_rank = ''
         self.selected_card = None
@@ -644,6 +640,7 @@ class GoFishApp(MDApp):
     
     def get_runtime_widget(self, widget):
         if hasattr(self, "player_widget_map") and widget in self.player_widget_map:
+            print(type(self.player_widget_map[widget]), self.player_widget_map[widget])
             return self.player_widget_map[widget]
         try:
             screen = self.root.get_screen("InGame")
@@ -789,9 +786,6 @@ class GoFishApp(MDApp):
             Card = Playing_Card(self.card_type(card))
             hand.add_widget(Card)
 
-    def player_turn():
-        pass #code goes here lolll
-
     def make_move(self,icon):
         g = self.game_instance
         if isinstance(icon,Bot_Icon):
@@ -800,25 +794,27 @@ class GoFishApp(MDApp):
             difficulty = Carou.current_slide.text
             if difficulty == "Beginner":
                 g.game_turn_bot(g.beginner_call())
-                self.update_widgets(self.current_player_view)
+                self.update_widgets()
             elif difficulty == "Easy":
                 g.game_turn_bot(g.easy_call())
-                self.update_widgets(self.current_player_view)
+                self.update_widgets()
             elif difficulty == "Medium":
                 g.game_turn_bot(g.medium_call())
-                self.update_widgets(self.current_player_view)
+                self.update_widgets()
             elif difficulty == "Hard":
                 g.game_turn_bot(g.hard_call())
-                self.update_widgets(self.current_player_view)
+                self.update_widgets()
             elif difficulty == "Expert":
                 g.game_turn_bot(g.expert_call())
-                self.update_widgets(self.current_player_view)
+                self.update_widgets()
+            g.Update_GameState()
+            Clock.schedule_once(self.next_turn, 0.5)
         else:
             moves = g.get_valid_moves(self.players.index(self.current_player_view))
             if not moves:
-                self.players_draw = True
+                self.player_draw = True
             else:
-                self.players_turn = True
+                self.player_turn = True
             return None
 
     def update_widgets(self):
@@ -829,17 +825,37 @@ class GoFishApp(MDApp):
         self.deal_cards()
         self.output_deck()
 
+    def end_player_turn(self):
+        g = self.game_instance
+        g.Update_GameState()
+        Clock.schedule_once(self.next_turn, 0.5)
+
+    def next_turn(self, *args):
+        g = self.game_instance
+
+        if g.is_game_over():
+            print("Game Over!")
+            return
+        
+        print(f"Turn {g.turn} — {self.playerandbots[g.turn]}")
+        
+        print(self.player_widget_map)
+        icon = self.get_runtime_widget(self.playerandbots[g.turn])
+        icon.highlight()
+        self.make_move(icon)
 
     def game_loop_solo(self):
         print("Game Started!")
         g = self.game_instance
-        g.turn = random.randint(0,g.amount_of_players - 1)
-        while not g.is_game_over():
-            print(self.player_widget_map)
-            icon = self.get_runtime_widget(self.playerandbots[g.turn])
-            icon.turn()
-            self.make_move(icon)
-            g.Update_GameState()
+        g.turn = random.randint(0,len(self.playerandbots) - 1)
+        self.next_turn()
+
+        #Clock.schedule_interval(self.update_game_loop, )
+            #print(self.player_widget_map)
+            #icon = self.get_runtime_widget(self.playerandbots[g.turn])
+            #icon.turn()
+            #self.make_move(icon)
+            #g.Update_GameState()
 
     def multi(self):
         print("multi")

@@ -8,13 +8,14 @@ Features!
 - Bot Players with varying difficulty.
 - 200+ Game Themes to choose from!
 - Statistics Menu to show off your best scores!
-- 
 
 Game Mechanics:
 
 - Click on a card to ask for it
 - Click on the icon of the player you want to ask
-- Be Successfull! Or not and have to take a 
+- Be Successfull! Or not and have to take a card from the deck by clicking on it
+
+
 
 Reflection:
 
@@ -26,6 +27,6 @@ Difficult Parts
 
 - Creating the Bot decisions
 - Creating the User Interface, especially regarding the gameplay as I struggled with generating cards and 
-- Overall Size of the Game: This is one of the biggest coding projects that I've worked on and I realised that I had not done sufficent planning for it. I found it very hard to keep track of what features I need to implement first and how to debug them as I was scrolling a lot to get to on particular 
+- Overall Size of the Game: This is the biggest project that I've worked on and I realised that I had not done sufficent planning for it. I found it very hard to keep track of what features I need to implement first and how to debug them as I was scrolling a lot to get to on particular sections of the code.
 
-This is first version of the Go Fish Mobile App, more features
+This is first version of the Go Fish Mobile App, more features to come! (If you were wondering about the 'tryagain.py that is a file containing all my scrapped features I failed to implement that I want to try again at haha... For example: pass and play multiplayer.)
