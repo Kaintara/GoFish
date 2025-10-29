@@ -246,10 +246,13 @@ class Deck_Cards(RelativeLayout):
         anim2.bind(on_complete=lambda *_: finish_callback())
 
         (anim1 + anim2).start(self)
-        
+
         app = MDApp.get_running_app()
         g = app.game_instance
-        g.deck.remove(app.suit_rank(self.card))
+        try:
+            g.shuffled_deck.remove(app.suit_rank(self.card))
+        except:
+            print(f"Apparently {g.shuffled_deck} doesn't have {app.suit_rank(self.card)}")
         g.hands[g.turn].append(app.suit_rank(self.card))
         g.check_for_sets()
         g.history.append((f'player{g.turn + 1}',g.hands[g.turn][-1],'draw'))
@@ -303,9 +306,14 @@ class Bot_Icon(MDCard):
                 self.md_bg_color = app.theme_cls.inversePrimaryColor   
                 moves = g.game_turn_player(move)
                 if not moves:
-                    print("Wrong")
                     app.player_turn = False        
-                    app.player_draw = True
+                    if g.shuffled_deck:
+                        app.player_draw = True
+                    else:
+                        g.Update_GameState()
+                        g.turn = g.next_vaild_player(g.turn)
+                        app.update_widgets()
+                        app.end_player_turn()
                 app.update_widgets()
                 app.selected_rank = ''
                 app.selected_card = None
@@ -594,6 +602,7 @@ class GoFishApp(MDApp):
         self.current_player_view = ''
         self.player_widget_map = {}
         self.dialog = ''
+        self.the_player = ''
         super().__init__(**kwargs)
     
     def build(self):
@@ -645,7 +654,6 @@ class GoFishApp(MDApp):
     
     def get_runtime_widget(self, widget):
         if hasattr(self, "player_widget_map") and widget in self.player_widget_map:
-            print(type(self.player_widget_map[widget]), self.player_widget_map[widget])
             return self.player_widget_map[widget]
         try:
             screen = self.root.get_screen("InGame")
@@ -792,7 +800,27 @@ class GoFishApp(MDApp):
             hand.add_widget(Card)
 
     def determine_turn_dialog(self):
-        self.dialog = ["PLayer_name's Turn! Missed/Hit!",'...']
+        g = self.game_instance
+        Correct = False
+        for i in g.dialog_text:
+            print(i)
+            if i[2] == 'took':
+                Correct = True
+                break
+        if Correct:
+            title = f"{self.the_player} was successful!"
+            text = ''
+            for i in range(len(g.dialog_text)):
+                notes = f"- Asked for {g.dialog_text[i][1]}s\n"
+                if notes not in text:
+                    text += notes
+        else:
+            title = f"{self.the_player} was unsuccessful!"
+            text = f"- Asked for {g.dialog_text[0][1]}s"
+        Correct = False
+        g.dialog_text = []
+        self.the_player = ''
+        self.dialog = [title,text]
 
     def close_turn_dialog(self):
         if hasattr(self, "turn_dialog") and self.turn_dialog:
@@ -832,6 +860,7 @@ class GoFishApp(MDApp):
         g = self.game_instance
         if isinstance(icon,Bot_Icon):
             print(g.state)
+            self.the_player = self.playerandbots[g.turn]
             Carou = self.get_widget("loop","Settings")
             difficulty = Carou.current_slide.text
             if difficulty == "Beginner":
@@ -872,12 +901,43 @@ class GoFishApp(MDApp):
         g.Update_GameState()
         Clock.schedule_once(self.next_turn, 0.5)
 
+    def go_to_menu(self, *args):
+        self.game_over_dialog.dismiss()
+        self.root.current = "Menu"
+
+    def game_over(self):
+        g = self.game_instance
+        self.game_over_dialog = MDDialog(
+            MDDialogIcon(icon="crown"),
+            MDDialogHeadlineText(text="Game Over!",
+                halign="center",
+                font_style= "cataway",
+                role="medium",),
+            MDDialogSupportingText(text="marli won!",
+                halign="left",
+                font_style= "cataway",
+                theme_font_size = "Custom",
+                font_size = dp(20),
+                markup = True,),
+                MDDialogButtonContainer(MDButton(
+                    MDButtonText(text="Good Game!", font_style = "cataway", role = "small"),
+                    MDButtonIcon(icon="check-outline"),
+                    style = "tonal",
+                    pos_hint = {"center_x":0.5},
+                    on_release = lambda x:self.go_to_menu()
+                )),
+            auto_dismiss = False
+        )
+        self.game_over_dialog.open()
+
     def next_turn(self, *args):
         g = self.game_instance
-
-        if g.is_game_over():
+        if g.is_game_over() or not g.hands[0]:
             print("Game Over!")
+            self.game_over()
             return
+        elif g.turn == None:
+            print("no Vaild player LOL")
         
         print(f"Turn {g.turn} — {self.playerandbots[g.turn]}")
         
@@ -906,6 +966,7 @@ class GoFishApp(MDApp):
         g.Update_GameState()
         self.output_players()
         self.deal_cards()
+        print(g.state)
         self.game_loop_solo()
         
 

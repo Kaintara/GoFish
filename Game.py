@@ -35,6 +35,7 @@ class Game:
             "history": [],
         }
         game.env = GameEnvironment(amount_of_players)
+        game.dialog_text = []
 
         
     def Update_GameState(game):
@@ -61,6 +62,7 @@ class Game:
         if game.shuffled_deck != []:
             players[playernum].append(game.shuffled_deck.pop())
             game.history.append((f'player{playernum + 1}',players[playernum][-1],'draw'))
+            game.dialog_text.append((f'player{playernum + 1}',players[playernum][-1],'draw'))
             game.Update_GameState()
 
     def remove_set(game,card,hand):
@@ -160,6 +162,7 @@ class Game:
             game.turn = game.next_vaild_player(game.turn)
             return
         game.history.append(move)
+        game.dialog_text.append(move)
         game.Update_GameState()
         target_player = int(move[0][6:]) - 1
         card = move[1]
@@ -168,6 +171,7 @@ class Game:
             if card == x[0]:
                 Correct = True
                 game.history.append((f'player{(game.turn+1)}',x,'took',f'player{(target_player+1)}'))
+                game.dialog_text.append(move)
                 game.hands[game.turn].append(x)
                 game.hands[target_player].remove(x)
                 game.check_for_sets()
@@ -175,9 +179,7 @@ class Game:
         if not Correct:
             if game.shuffled_deck:
                 game.draw_card(game.turn)
-                game.turn = game.next_vaild_player(game.turn)
-            if any(len(hand) == 0 for hand in game.hands):
-                game.turn = game.next_vaild_player(game.turn)
+            game.turn = game.next_vaild_player(game.turn)
 
     def game_turn_player(game,move):
         game.history.append(move)
@@ -193,7 +195,7 @@ class Game:
                 game.hands[target_player].remove(x)
                 game.check_for_sets()
                 game.Update_GameState()
-        if Correct:
+        if Correct and game.hands[game.turn]:
             return True
         else:
             return False

@@ -227,13 +227,11 @@ def one_level_mcts(root_state,root_player,game_env,iterations):
         det_root = game_env.determinization(root_state)
         root_node = Node(det_root, parent=None, move_from_parent=None)
         root_node.untried_moves = game_env.get_legal_moves(root_node.state)
-        print(root_node.untried_moves)
         for move in root_node.untried_moves:
             child_state = game_env.apply_move(det_root, move)
             child_node = Node(child_state, root_node, move)
             root_node.children.append(child_node)
             child_node.untried_moves = []
-        print(root_node.children)
         for _ in range(iterations):
                 child = random.choice(root_node.children)
                 if not child:
