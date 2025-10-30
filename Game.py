@@ -66,10 +66,10 @@ class Game:
             game.Update_GameState()
 
     def remove_set(game,card,hand):
-        print(card)
+        #print(card)
         remove = [card+'D',card+'S',card+'H',card+'C']
-        print(remove)
-        print(hand)
+        #print(remove)
+        #print(hand)
         for card in remove:
             hand.remove(card)
 
@@ -77,7 +77,7 @@ class Game:
         players = game.hands
         for x in players:
             x.sort(key=(lambda a : game.rank_order[a[0]]))
-            print(x)
+            #print(x)
 
 
     def check_for_sets(game):

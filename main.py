@@ -253,7 +253,8 @@ class Deck_Cards(RelativeLayout):
         try:
             g.shuffled_deck.remove(app.suit_rank(self.card))
         except:
-            print(f"Apparently {g.shuffled_deck} doesn't have {app.suit_rank(self.card)}")
+            pass
+            #print(f"Apparently {g.shuffled_deck} doesn't have {app.suit_rank(self.card)}")
         g.hands[g.turn].append(app.suit_rank(self.card))
         g.check_for_sets()
         g.history.append((f'player{g.turn + 1}',g.hands[g.turn][-1],'draw'))
@@ -305,7 +306,7 @@ class Bot_Icon(MDCard):
                 if app.selected_rank == "10":
                     app.selected_rank = "1"
                 move = (self.player,app.selected_rank,'ask') 
-                print(move)
+                #print(move)
                 self.md_bg_color = app.theme_cls.inversePrimaryColor   
                 moves = g.game_turn_player(move)
                 if not moves:
@@ -857,7 +858,7 @@ class GoFishApp(MDApp):
 
     def determine_turn_dialog(self):
         g = self.game_instance
-        print("Dialog Text:", g.dialog_text, "The player:", self.the_player)
+        #print("Dialog Text:", g.dialog_text, "The player:", self.the_player)
         Correct = all((i[2] != 'draw' and len(g.dialog_text) > 1) for i in g.dialog_text)
         if Correct:
             title = f"{self.the_player} was successful!"
@@ -924,7 +925,7 @@ class GoFishApp(MDApp):
     def make_move(self,icon):
         g = self.game_instance
         if isinstance(icon,Bot_Icon):
-            print(g.state)
+            #print(g.state)
             self.the_player = self.playerandbots[g.turn]
             if self.get_difficulty() == "Beginner":
                 g.game_turn_bot(g.beginner_call())
@@ -1014,13 +1015,14 @@ class GoFishApp(MDApp):
     def next_turn(self, *args):
         g = self.game_instance
         if g.is_game_over():
-            print("Game Over!")
+            #print("Game Over!")
             self.game_over()
             return
         elif g.turn == None:
-            print("no Vaild player LOL")
+            pass
+            #print("no Vaild player LOL")
         
-        print(f"Turn {g.turn} — {self.playerandbots[g.turn]}")
+        #print(f"Turn {g.turn} — {self.playerandbots[g.turn]}")
         
         icon = self.get_runtime_widget(self.playerandbots[g.turn])
         icon.highlight()
@@ -1028,7 +1030,7 @@ class GoFishApp(MDApp):
         self.make_move(icon)
 
     def game_loop_solo(self):
-        print("Game Started!")
+        #print("Game Started!")
         g = self.game_instance
         g.turn = random.randint(0,len(self.playerandbots) - 1)
         self.next_turn()
@@ -1069,7 +1071,7 @@ class GoFishApp(MDApp):
         g.Update_GameState()
         self.output_players()
         self.deal_cards()
-        print(g.state)
+        #print(g.state)
         self.game_loop_solo()
         
     def start(self): #Starts the game
