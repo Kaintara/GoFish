@@ -301,6 +301,8 @@ class Bot_Icon(MDCard):
             app = MDApp.get_running_app()
             g = app.game_instance
             if app.selected and app.players[g.turn] != self.id:
+                if app.selected_rank == "10":
+                    app.selected_rank = "1"
                 move = (self.player,app.selected_rank,'ask') 
                 print(move)
                 self.md_bg_color = app.theme_cls.inversePrimaryColor   
@@ -801,12 +803,8 @@ class GoFishApp(MDApp):
 
     def determine_turn_dialog(self):
         g = self.game_instance
-        Correct = False
-        for i in g.dialog_text:
-            print(i)
-            if i[2] == 'took':
-                Correct = True
-                break
+        print("Dialog Text:", g.dialog_text, "The player:", self.the_player)
+        Correct = any(i[2] == 'took' for i in g.dialog_text)
         if Correct:
             title = f"{self.the_player} was successful!"
             text = ''
@@ -817,7 +815,6 @@ class GoFishApp(MDApp):
         else:
             title = f"{self.the_player} was unsuccessful!"
             text = f"- Asked for {g.dialog_text[0][1]}s"
-        Correct = False
         g.dialog_text = []
         self.the_player = ''
         self.dialog = [title,text]
@@ -907,13 +904,20 @@ class GoFishApp(MDApp):
 
     def game_over(self):
         g = self.game_instance
+        dialog_text = ''
+        max = ['player',0]
+        for i, s in enumerate(g.sets):
+            dialog_text += (f"{self.playerandbots[i]} got {len(s)} sets.\n")
+            size = len(s)
+            if max[1] < size:
+                max = [self.playerandbots[i],size]
         self.game_over_dialog = MDDialog(
             MDDialogIcon(icon="crown"),
-            MDDialogHeadlineText(text="Game Over!",
+            MDDialogHeadlineText(text=f"Game Over! {max[0]} won!",
                 halign="center",
                 font_style= "cataway",
                 role="medium",),
-            MDDialogSupportingText(text="marli won!",
+            MDDialogSupportingText(text=dialog_text,
                 halign="left",
                 font_style= "cataway",
                 theme_font_size = "Custom",
@@ -952,7 +956,28 @@ class GoFishApp(MDApp):
         self.next_turn()
 
     def multi(self):
-        print("multi")
+        self.multi_dialog = MDDialog(
+            MDDialogIcon(icon="script-text-outline"),
+            MDDialogHeadlineText(text="Not Available :( ",
+                halign="center",
+                font_style= "cataway",
+                role="medium",),
+            MDDialogSupportingText(text="This is my first version so at the moment the game is only playable with bots... Not pass and play sorry :(",
+                halign="left",
+                font_style= "cataway",
+                theme_font_size = "Custom",
+                font_size = dp(20),
+                markup = True,),
+                MDDialogButtonContainer(MDButton(
+                    MDButtonText(text="It's okay, I understand", font_style = "cataway", role = "small"),
+                    MDButtonIcon(icon="check-outline"),
+                    style = "tonal",
+                    pos_hint = {"center_x":0.5},
+                    on_release = lambda x:self.go_to_menu()
+                )),
+            auto_dismiss = False
+        )
+        self.multi_dialog.open()
 
     def solo(self):
         self.current_player_view = self.players[0]

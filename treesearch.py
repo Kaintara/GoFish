@@ -264,7 +264,7 @@ def two_level_mcts(root_state,root_player,game_env,iterations):
 
         for _ in range(iterations):
             for first_child in root_node.children:
-                if not first_child:
+                if not first_child.children:
                         continue
                 child = random.choice(first_child.children)
                 sim_state = copy.deepcopy(child.state)
