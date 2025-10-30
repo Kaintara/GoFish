@@ -142,7 +142,7 @@ class Playing_Card(MDCard): #Actual playing card for gameplay
             adaptive_size= True
         )
         self.down_text = Card_Label(
-            pos_hint= {"top":1.1, "center_x":0.8},
+            pos_hint= {"top":0, "center_x":0.8},
             text= self.rank,
             font_style= "cataway",
             role= "small",
@@ -204,8 +204,8 @@ class Deck_Cards(RelativeLayout):
         self.card_front = Playing_Card(self.card)
         self.card_back = Playing_Card_Back()
         self.buffer = Playing_Card_Back()
-        self.add_widget(self.buffer)
         self.add_widget(self.card_front)
+        self.add_widget(self.buffer)
         self.add_widget(self.card_back)
         self.remove_widget(self.buffer)
         self.is_front_visible = False
@@ -760,6 +760,8 @@ class GoFishApp(MDApp):
         Carou = self.get_widget("loop","Stats")
         setting = Carou.current_slide.text
         data = self.load2()
+        nodiff = data[setting]
+        '''
         if setting == "All_Time Stats": #Expert goes here
             nodiff = data["Expert"]
         elif setting == "Beginner": #All-time
@@ -772,6 +774,7 @@ class GoFishApp(MDApp):
             nodiff = data["Medium"]
         elif setting == "Expert": #Hard
             nodiff = data["Hard"]
+        '''
 
         win_rate = (nodiff["wins"] / nodiff["games_played"] * 100) if nodiff["games_played"] > 0 else 0
         info = f"Games Played: {nodiff["games_played"]}\nWins: {nodiff["wins"]}\nWin Rate: {win_rate:.1f}%\nMost Sets: {nodiff["most_sets"]}\nTotal Sets Collected: {nodiff['total_sets']}\nLast Played: {nodiff["last_played"]}"
@@ -855,7 +858,7 @@ class GoFishApp(MDApp):
     def determine_turn_dialog(self):
         g = self.game_instance
         print("Dialog Text:", g.dialog_text, "The player:", self.the_player)
-        Correct = any(i[2] == 'took' for i in g.dialog_text)
+        Correct = any((i[2] != 'draw' and len(g.dialog_text) > 1) for i in g.dialog_text)
         if Correct:
             title = f"{self.the_player} was successful!"
             text = ''
@@ -1020,6 +1023,7 @@ class GoFishApp(MDApp):
         
         icon = self.get_runtime_widget(self.playerandbots[g.turn])
         icon.highlight()
+        g.Update_GameState()
         self.make_move(icon)
 
     def game_loop_solo(self):

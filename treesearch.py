@@ -76,11 +76,11 @@ class GameEnvironment:
         deck = copied["deck"][:]
         for x in [c for l,c in copied["hands"].items() if l != Ai]:
             deck.extend(x)
-
+        random.shuffle(deck)
         history = copied["history"]
         if not history:
             for i in range(game.amount_of_players):
-                if f'player{i}' != Ai:
+                if f'player{i+1}' != Ai:
                     for x in range(0,8):
                         Determined_hands[f'player{i+1}'].append(deck.pop())
 
@@ -162,8 +162,8 @@ class GameEnvironment:
             if s["deck"]:
                 s["hands"][current_name].append(s["deck"][0])
                 s["deck"].remove(s["deck"][0])
-                next_index = (current_index + 1) % game.amount_of_players
-                s["current_player"] = (next_index, f'player{next_index + 1}')
+        next_index = (current_index + 1) % game.amount_of_players
+        s["current_player"] = (next_index, f'player{next_index + 1}')
         s["history"] = history
 
         game.check_for_sets(s)
@@ -228,6 +228,7 @@ def one_level_mcts(root_state,root_player,game_env,iterations):
         det_root = game_env.determinization(root_state)
         root_node = Node(det_root, parent=None, move_from_parent=None)
         root_node.untried_moves = game_env.get_legal_moves(root_node.state)
+        print(root_node.untried_moves)
         for move in root_node.untried_moves:
             child_state = game_env.apply_move(det_root, move)
             child_node = Node(child_state, root_node, move)

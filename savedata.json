@@ -130,5 +130,49 @@
             "most_sets": 0,
             "last_played": null
         }
+    },
+    "dfs": {
+        "All_Time Stats": {
+            "games_played": 1,
+            "wins": 1,
+            "total_sets": 6,
+            "most_sets": 6,
+            "last_played": "2025-10-30 13:21:00"
+        },
+        "Beginner": {
+            "games_played": 1,
+            "wins": 1,
+            "total_sets": 6,
+            "most_sets": 0,
+            "last_played": "2025-10-30 13:21:00"
+        },
+        "Easy": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Medium": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Hard": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Expert": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        }
     }
 }
