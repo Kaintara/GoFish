@@ -317,14 +317,16 @@
             do_scroll_y: True
             pos_hint: {"center_x":0.5, "top": 0.55}
             size_hint: 1, 0.55
-            MDBoxLayout:
-                md_bg_color: app.theme_cls.primaryColor
-                id: stats
-                orientation: "vertical"
-                adaptive_height: True
-                adaptive_width: True
-                spacing: dp(20)
-                pos_hint: {"center_x":0.5, "center_y":0.5, "top": 0.5}
+            MDAnchorLayout:
+                anchor_x: "center"
+                anchor_y: "center"
+                MDBoxLayout:
+                    id: stats
+                    orientation: "vertical"
+                    adaptive_height: True
+                    adaptive_width: True
+                    spacing: dp(20)
+                    pos_hint: {"center_x":0.5, "center_y":0.5, "top": 0.5}
         MDIconButton: #Back button
             pos_hint: {"left":0.98, "top": 0.98}
             size: dp(48), dp(48)

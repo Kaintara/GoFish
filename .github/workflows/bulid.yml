@@ -1,0 +1,71 @@
+name: Build_Kivy_APK
+
+on:
+  workflow_dispatch:  # Manual trigger from Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # Needed for uploading artifacts
+
+    steps:
+      - name: 🧩 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: 🧱 Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            git \
+            zip \
+            unzip \
+            openjdk-17-jdk \
+            python3-pip \
+            libgl1-mesa-dev \
+            libgles2-mesa-dev \
+            liblzma-dev \
+            zlib1g-dev \
+            libffi-dev \
+            libssl-dev \
+            libjpeg-dev \
+            libfreetype6-dev \
+            autoconf \
+            automake \
+            cmake \
+            pkg-config \
+            libtool \
+            libltdl-dev
+
+      - name: Debug path
+        run: |
+          echo "Current dir: $(pwd)"
+          ls -la 
+      - name: Create and activate virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install "cython<3.0" "setuptools<70" wheel buildozer virtualenv
+
+      - name: Build Android APK
+        run: |
+          source venv/bin/activate
+          cd $GITHUB_WORKSPACE
+          yes | buildozer android update
+          yes | buildozer android clean
+          rm -rf .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/build/other_builds/hostpython3
+          yes | buildozer android debug
+
+      - name: 📤 Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kivy-app-debug-apk
+          path: bin/*.apk
