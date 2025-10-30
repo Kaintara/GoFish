@@ -1,0 +1,134 @@
+{
+    "Marli": {
+        "All_Time Stats": {
+            "games_played": 4,
+            "wins": 3,
+            "total_sets": 9,
+            "most_sets": 5,
+            "last_played": null
+        },
+        "Beginner": {
+            "games_played": 2,
+            "wins": 2,
+            "total_sets": 3,
+            "most_sets": 3,
+            "last_played": null
+        },
+        "Easy": {
+            "games_played": 1,
+            "wins": 1,
+            "total_sets": 2,
+            "most_sets": 2,
+            "last_played": null
+        },
+        "Medium": {
+            "games_played": 1,
+            "wins": 0,
+            "total_sets": 3,
+            "most_sets": 3,
+            "last_played": null
+        },
+        "Hard": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Expert": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        }
+    },
+    "": {
+        "All_Time Stats": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Beginner": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Easy": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Medium": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Hard": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Expert": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        }
+    },
+    "g": {
+        "All_Time Stats": {
+            "games_played": 1,
+            "wins": 1,
+            "total_sets": 6,
+            "most_sets": 6,
+            "last_played": "2025-10-30 02:47:28"
+        },
+        "Beginner": {
+            "games_played": 1,
+            "wins": 1,
+            "total_sets": 6,
+            "most_sets": 0,
+            "last_played": "2025-10-30 02:47:28"
+        },
+        "Easy": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Medium": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Hard": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        },
+        "Expert": {
+            "games_played": 0,
+            "wins": 0,
+            "total_sets": 0,
+            "most_sets": 0,
+            "last_played": null
+        }
+    }
+}

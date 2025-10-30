@@ -759,35 +759,40 @@ class GoFishApp(MDApp):
         layout.clear_widgets()
         Carou = self.get_widget("loop","Stats")
         setting = Carou.current_slide.text
-        if setting == "All-Time Stats": #Expert goes here
-            pass
+        data = self.load2()
+        if setting == "All_Time Stats": #Expert goes here
+            nodiff = data["Expert"]
         elif setting == "Beginner": #All-time
-            pass
+            nodiff = data["All_Time Stats"]
         elif setting == "Easy": #Beginner
-            pass
+            nodiff = data["Beginner"]
         elif setting == "Medium": #Easy
-            Score = MDLabel(
-            text = "30/10/25 -  5 sets",
+            nodiff = data["Easy"]
+        elif setting == "Hard": #Medium
+            nodiff = data["Medium"]
+        elif setting == "Expert": #Hard
+            nodiff = data["Hard"]
+
+        win_rate = (nodiff["wins"] / nodiff["games_played"] * 100) if nodiff["games_played"] > 0 else 0
+        info = f"Games Played: {nodiff["games_played"]}\nWins: {nodiff["wins"]}\nWin Rate: {win_rate:.1f}%\nMost Sets: {nodiff["most_sets"]}\nTotal Sets Collected: {nodiff['total_sets']}\nLast Played: {nodiff["last_played"]}"
+        Score = MDLabel(
+            text = info,
             font_style= "cataway",
             role= "small",
             halign= 'center',
             pos_hint= {"center_x":0.5,"center_y":0.5},
-            theme_font_size= "Custom",
-            font_size = dp(30),
             adaptive_size= True)
-            layout.add_widget(Score)
-        elif setting == "Hard": #Medium
-            pass
-        elif setting == "Expert": #Hard
-            pass
+        layout.add_widget(Score)
 
     def right_stats(self):
         Carou = self.get_widget("loop","Stats")
         Carou.load_next()
+        self.update_carousel()
     
     def left_stats(self):
         Carou = self.get_widget("loop","Stats")
         Carou.load_previous()
+        self.update_carousel()
 
     def assign_player_num(self): #Gives each player a player name which is used frequently in the Game.py code
         g = self.game_instance
@@ -1098,49 +1103,55 @@ class GoFishApp(MDApp):
         self.players.append(name)
 
     def load(self):
+        try:
+            with open("GoFish\savedata.json", "r") as file:
+                data = json.load(file)
+        except:
+            data = {}
+            with open("GoFish\savedata.json", "w") as f:
+                json.dump(data, f)
         with open("GoFish\savedata.json", "r") as file:
-            data = json.load(file)
             try:
                 if data[self.current_player_view]:
                     return data
             except:
                 data[self.current_player_view] = {
-  "all_time": {
+  "All_Time Stats": {
     "games_played": 0,
     "wins": 0,
     "total_sets": 0,
     "most_sets": 0,
     "last_played": None
   },
-  "beginner": {
+  "Beginner": {
     "games_played": 0,
     "wins": 0,
     "total_sets": 0,
     "most_sets": 0,
     "last_played": None
   },
-  "easy": {
+  "Easy": {
     "games_played": 0,
     "wins": 0,
     "total_sets": 0,
     "most_sets": 0,
     "last_played": None
   },
-  "medium": {
+  "Medium": {
     "games_played": 0,
     "wins": 0,
     "total_sets": 0,
     "most_sets": 0,
     "last_played": None
   },
-  "hard": {
+  "Hard": {
     "games_played": 0,
     "wins": 0,
     "total_sets": 0,
     "most_sets": 0,
     "last_played": None
   },
-  "expert": {
+  "Expert": {
     "games_played": 0,
     "wins": 0,
     "total_sets": 0,
@@ -1156,7 +1167,7 @@ class GoFishApp(MDApp):
         all_data = self.load()
         data = all_data[self.current_player_view]
         nodiff = data[difficulty]
-        all = data["all_time"]
+        all = data["All_Time Stats"]
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         nodiff["last_played"] = now
         nodiff["games_played"] += 1
@@ -1176,6 +1187,30 @@ class GoFishApp(MDApp):
         all_data[self.current_player_view] = data
         with open("GoFish\savedata.json", "w") as save_file:
             json.dump(all_data, save_file, indent=4)
+        return data
+    
+    def load2(self):
+        default_template = {
+            "all_time": {"games_played": 0, "wins": 0, "total_sets": 0, "most_sets": 0, "last_played": None},
+            "beginner": {"games_played": 0, "wins": 0, "total_sets": 0, "most_sets": 0, "last_played": None},
+            "easy": {"games_played": 0, "wins": 0, "total_sets": 0, "most_sets": 0, "last_played": None},
+            "medium": {"games_played": 0, "wins": 0, "total_sets": 0, "most_sets": 0, "last_played": None},
+            "hard": {"games_played": 0, "wins": 0, "total_sets": 0, "most_sets": 0, "last_played": None},
+            "expert": {"games_played": 0, "wins": 0, "total_sets": 0, "most_sets": 0, "last_played": None}
+        }
+
+        filename = "GoFish\savedata.json"
+ 
+        with open(filename, "r") as file:
+            try:
+                data = json.load(file)
+            except json.JSONDecodeError:
+                data = {self.current_player_view: default_template}
+
+        if self.current_player_view not in data:
+            data[self.current_player_view] = default_template
+
+        return data[self.current_player_view]
 
 
 #Running App
