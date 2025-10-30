@@ -4,6 +4,7 @@ from math import sin, cos, radians
 import random
 from Game import Game
 import json
+from datetime import datetime
 
 #Kivy
 from kivy.core.window import Window
@@ -706,7 +707,6 @@ class GoFishApp(MDApp):
         self.theme_cls.primary_palette = colour
 
     def on_start(self): #When the app starts this is run, preloads the theme section
-        self.resume_game()
         grid = self.get_widget("grid","Themes")
         for colour in self.colours:
             int = random.randint(0,3)
@@ -899,26 +899,38 @@ class GoFishApp(MDApp):
         )
         self.turn_dialog.open()
 
+    def get_difficulty(self):
+        Carou = self.get_widget("loop","Settings")
+        difficulty = Carou.current_slide.text
+        if difficulty == "Beginner":
+            return "Beginner"
+        elif difficulty == "Easy":
+            return "Easy"
+        elif difficulty == "Medium":
+            return "Medium"
+        elif difficulty == "Hard":
+            return "Hard"
+        elif difficulty == "Expert":
+            return "Expert"
+
     def make_move(self,icon):
         g = self.game_instance
         if isinstance(icon,Bot_Icon):
             print(g.state)
             self.the_player = self.playerandbots[g.turn]
-            Carou = self.get_widget("loop","Settings")
-            difficulty = Carou.current_slide.text
-            if difficulty == "Beginner":
+            if self.get_difficulty() == "Beginner":
                 g.game_turn_bot(g.beginner_call())
                 self.update_widgets()
-            elif difficulty == "Easy":
+            elif self.get_difficulty() == "Easy":
                 g.game_turn_bot(g.easy_call())
                 self.update_widgets()
-            elif difficulty == "Medium":
+            elif self.get_difficulty() == "Medium":
                 g.game_turn_bot(g.medium_call())
                 self.update_widgets()
-            elif difficulty == "Hard":
+            elif self.get_difficulty() == "Hard":
                 g.game_turn_bot(g.hard_call())
                 self.update_widgets()
-            elif difficulty == "Expert":
+            elif self.get_difficulty() == "Expert":
                 g.game_turn_bot(g.expert_call())
                 self.update_widgets()
             g.Update_GameState()
@@ -966,6 +978,7 @@ class GoFishApp(MDApp):
             size = len(s)
             if max[1] < size:
                 max = [self.playerandbots[i],size]
+        self.update_save(self.get_difficulty(),max[0],len(g.sets[0]))
         self.game_over_dialog = MDDialog(
             MDDialogIcon(icon="crown"),
             MDDialogHeadlineText(text=f"Game Over! {max[0]} won!",
@@ -1084,13 +1097,86 @@ class GoFishApp(MDApp):
         player.add_widget(entry_box, index=0)
         self.players.append(name)
 
-    def save(self):
-        save_data = {
-
-        }
-    
     def load(self):
-        pass
+        with open("GoFish\savedata.json", "r") as file:
+            data = json.load(file)
+            try:
+                if data[self.current_player_view]:
+                    return data
+            except:
+                data[self.current_player_view] = {
+  "all_time": {
+    "games_played": 0,
+    "wins": 0,
+    "total_sets": 0,
+    "most_sets": 0,
+    "last_played": None
+  },
+  "beginner": {
+    "games_played": 0,
+    "wins": 0,
+    "total_sets": 0,
+    "most_sets": 0,
+    "last_played": None
+  },
+  "easy": {
+    "games_played": 0,
+    "wins": 0,
+    "total_sets": 0,
+    "most_sets": 0,
+    "last_played": None
+  },
+  "medium": {
+    "games_played": 0,
+    "wins": 0,
+    "total_sets": 0,
+    "most_sets": 0,
+    "last_played": None
+  },
+  "hard": {
+    "games_played": 0,
+    "wins": 0,
+    "total_sets": 0,
+    "most_sets": 0,
+    "last_played": None
+  },
+  "expert": {
+    "games_played": 0,
+    "wins": 0,
+    "total_sets": 0,
+    "most_sets": 0,
+    "last_played": None
+  }
+}
+            with open("GoFish\savedata.json", "w") as save_file:
+                json.dump(data, save_file, indent=4)
+            return data
+
+    def update_save(self,difficulty, winner_name, sets_collected):
+        all_data = self.load()
+        data = all_data[self.current_player_view]
+        nodiff = data[difficulty]
+        all = data["all_time"]
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        nodiff["last_played"] = now
+        nodiff["games_played"] += 1
+        nodiff["total_sets"] += sets_collected
+        if sets_collected > all["most_sets"]:
+            all["most_sets"] = sets_collected
+        all["games_played"] += 1
+        all["total_sets"] += sets_collected
+        if sets_collected > all["most_sets"]:
+            all["most_sets"] = sets_collected
+        all["last_played"] = now
+        
+        if winner_name == self.players[0]:
+            nodiff["wins"] += 1
+            all["wins"] += 1
+
+        all_data[self.current_player_view] = data
+        with open("GoFish\savedata.json", "w") as save_file:
+            json.dump(all_data, save_file, indent=4)
+
 
 #Running App
 if __name__ == "__main__":
