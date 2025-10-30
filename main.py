@@ -1008,11 +1008,12 @@ class GoFishApp(MDApp):
                 )),
             auto_dismiss = False
         )
+        self.players = []
         self.game_over_dialog.open()
 
     def next_turn(self, *args):
         g = self.game_instance
-        if g.is_game_over() or not g.hands[0]:
+        if g.is_game_over():
             print("Game Over!")
             self.game_over()
             return
@@ -1176,8 +1177,8 @@ class GoFishApp(MDApp):
         nodiff["last_played"] = now
         nodiff["games_played"] += 1
         nodiff["total_sets"] += sets_collected
-        if sets_collected > all["most_sets"]:
-            all["most_sets"] = sets_collected
+        if sets_collected > nodiff["most_sets"]:
+            nodiff["most_sets"] = sets_collected
         all["games_played"] += 1
         all["total_sets"] += sets_collected
         if sets_collected > all["most_sets"]:

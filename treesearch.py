@@ -41,6 +41,7 @@ class GameEnvironment:
             if x[2] == 'draw':
                 s['history'].remove(x)
         history = s["history"][-(game.amount_of_players *2):]
+        history = sorted(history,reverse=True)
         Ai = state["current_player"][1]
         known_hands = {k: [] for k, a in s["hands"].items() if k != Ai}
         auto_moves = []
@@ -175,20 +176,18 @@ class GameEnvironment:
     
     def get_reward(game,state,index):
         reward = 0
-        for player,hand in state["hands"]:
+        player_name = f'player{index+1}'
+        for player,hand in state["hands"].items():
             ranks = [card[:-1] for card in hand]
             counts = Counter(ranks)
             near_sets = [rank for rank, count in counts.items() if count == 3]
-            if hand == state["hands"][f'player{index+1}']:
-                if near_sets:
-                    reward += len(state["sets"][f'player{index+1}']) + int(len(near_sets)*0.5)
-                else:
-                    reward += len(state["sets"][f'player{index+1}'])
+            sets_count = len(state["sets"][player])
+            near_bonus = 0.5 * len(near_sets)
+
+            if player == player_name:
+                reward += sets_count + near_bonus
             else:
-                if near_sets:
-                    reward -= (len(state["sets"][player]) + int(len(near_sets)*0.5)) * 0.25
-                else:
-                    reward -= len(state["sets"][player]) * 0.25
+                reward -= 0.25 * (sets_count + near_bonus)
         return reward
 
 
@@ -255,10 +254,11 @@ def one_level_mcts(root_state,root_player,game_env,iterations):
                 else:
                     child.value += reward
                 child.visits += 1
-                
-        best_child = max(root_node.children, key=lambda c: c.value / c.visits if c.visits > 0 else 0)
-        return (root_node.best_child(1.4)).move_from_parent
-
+        best = root_node.best_child(1.4)
+        if best is None:
+            return None
+        return best.move_from_parent
+        
 def two_level_mcts(root_state,root_player,game_env,iterations):
         det_root = game_env.determinization(root_state)
         root_node = Node(det_root, parent=None, move_from_parent=None)
@@ -291,7 +291,10 @@ def two_level_mcts(root_state,root_player,game_env,iterations):
             if first_child.children:
                 first_child.visits = sum(child.visits for child in first_child.children)
                 first_child.value = sum(child.value for child in first_child.children)
-        return (root_node.best_child(1.4)).move_from_parent
+        best = root_node.best_child(1.4)
+        if best is None:
+            return None
+        return best.move_from_parent
     
 def three_level_mcts(root_state,root_player,game_env,iterations):
         det_root = game_env.determinization(root_state)
@@ -336,4 +339,10 @@ def three_level_mcts(root_state,root_player,game_env,iterations):
                 if first_child.children:
                     first_child.visits = sum(child.visits for child in first_child.children)
                     first_child.value = sum(child.value for child in first_child.children)
-        return (root_node.best_child(1.4)).move_from_parent
+        best = root_node.best_child(1.4)
+        if best is None:
+            return None
+        return best.move_from_parent
+
+env = GameEnvironment(4)
+dt = three_level_mcts({'hands': {'player1': [], 'player2': ['5H', '5C', '5S'], 'player3': [], 'player4': ['5D']}, 'sets': {'player1': ['K', 'J', 'Q', '8', '9', 'A', '4'], 'player2': ['3'], 'player3': ['6'], 'player4': ['1', '7', '2']}, 'deck': [], 'current_player': (2, 'player3'), 'history': [('player2', '6', 'ask'), ('player4', '6C', 'took', 'player2'), ('player2', '6', 'ask'), ('player4', 'JS', 'draw'), ('player3', 'K', 'ask'), ('player1', 'KH', 'took', 'player3'), ('player4', 'K', 'ask'), ('player1', 'KD', 'took', 'player4'), ('player2', 'A', 'ask'), ('player1', '9D', 'draw'), ('player4', 'J', 'ask'), ('player2', 'JS', 'took', 'player4'), ('player4', 'J', 'ask'), ('player2', '5C', 'draw'), ('player2', '9', 'ask'), ('player3', 'QD', 'draw'), ('player2', '6', 'ask'), ('player4', '7D', 'draw'), ('player3', '9', 'ask'), ('player1', '9S', 'took', 'player3'), ('player1', '9C', 'took', 'player3'), ('player4', '9', 'ask'), ('player1', 'JC', 'draw'), ('player4', 'J', 'ask'), ('player2', '1D', 'draw'), ('player2', '4', 'ask'), ('player3', '4C', 'took', 'player2'), ('player2', '4', 'ask'), ('player3', '2D', 'draw'), ('player1', '3', 'ask'), ('player4', '3H', 'draw'), ('player2', 'J', 'ask'), ('player1', 'JH', 'took', 'player2'), ('player1', 'JD', 'took', 'player2'), ('player1', 'JS', 'took', 'player2'), ('player4', '8', 'ask'), ('player1', 'QS', 'draw'), ('player3', '1', 'ask'), ('player2', '1S', 'took', 'player3'), ('player3', '1', 'ask'), ('player2', '7C', 'draw'), ('player4', '8', 'ask'), ('player3', '6H', 'draw'), ('player2', '1', 'ask'), ('player4', '1H', 'took', 'player2'), ('player4', '1D', 'took', 'player2'), ('player4', '1S', 'took', 'player2'), ('player2', '6', 'ask'), ('player4', '2H', 'draw'), ('player3', 'Q', 'ask'), ('player1', 'QD', 'took', 'player3'), ('player4', 'Q', 'ask'), ('player1', '9C', 'draw'), ('player4', '3', 'ask'), ('player2', '3S', 'took', 'player4'), ('player2', '3H', 'took', 'player4'), ('player4', '3', 'ask'), ('player2', '5S', 'draw'), ('player2', '4', 'ask'), ('player3', 'AS', 'draw'), ('player3', 'A', 'ask'), ('player4', 'AS', 'took', 'player3'), ('player3', 'A', 'ask'), ('player4', '8C', 'draw'), ('player4', 'A', 'ask'), ('player1', 'AC', 'took', 'player4'), ('player1', 'AS', 'took', 'player4'), ('player2', '8', 'ask'), ('player1', '3C', 'draw'), ('player1', '7', 'ask'), ('player2', '7S', 'took', 'player1'), ('player1', '7', 'ask'), ('player2', 'AD', 'draw'), ('player2', '4', 'ask'), ('player3', '9H', 'draw'), ('player2', '7', 'ask'), ('player4', '7H', 'took', 'player2'), ('player4', '7C', 'took', 'player2'), ('player4', '7S', 'took', 'player2'), ('player3', '2', 'ask'), ('player4', '2S', 'took', 'player3'), ('player4', '2D', 'took', 'player3'), ('player3', '8', 'ask'), ('player4', '8S', 'took', 'player3'), ('player3', '8', 'ask'), ('player4', '8', 'ask'), ('player1', '8C', 'took', 'player4'), ('player1', '8S', 'took', 'player4'), ('player2', '9', 'ask'), ('player1', '3', 'ask'), ('player2', '3C', 'took', 'player1'), ('player1', '5', 'ask'), ('player2', '4', 'ask'), ('player2', '6', 'ask'), ('player3', '9', 'ask'), ('player1', '9H', 'took', 'player3'), ('player4', 'A', 'ask'), ('player4', 'A', 'ask'), ('player2', '6', 'ask'), ('player2', '6', 'ask'), ('player2', 'A', 'ask'), ('player1', 'AD', 'took', 'player2'), ('player4', '4', 'ask'), ('player1', '5', 'ask'), ('player2', '6', 'ask'), ('player2', '6', 'ask'), ('player3', '4', 'ask'), ('player1', '4H', 'took', 'player3'), ('player1', '4S', 'took', 'player3'), ('player1', '4C', 'took', 'player3'), ('player1', '5', 'ask'), ('player4', '6', 'ask'), ('player3', '6D', 'took', 'player4'), ('player3', '6S', 'took', 'player4'), ('player3', '6C', 'took', 'player4')]},2,env,1)
