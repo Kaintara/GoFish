@@ -142,7 +142,7 @@ class Playing_Card(MDCard): #Actual playing card for gameplay
             adaptive_size= True
         )
         self.down_text = Card_Label(
-            pos_hint= {"top":0, "center_x":0.8},
+            pos_hint= {"top":0.4, "center_x":-0.3},
             text= self.rank,
             font_style= "cataway",
             role= "small",
@@ -858,7 +858,7 @@ class GoFishApp(MDApp):
     def determine_turn_dialog(self):
         g = self.game_instance
         print("Dialog Text:", g.dialog_text, "The player:", self.the_player)
-        Correct = any((i[2] != 'draw' and len(g.dialog_text) > 1) for i in g.dialog_text)
+        Correct = all((i[2] != 'draw' and len(g.dialog_text) > 1) for i in g.dialog_text)
         if Correct:
             title = f"{self.the_player} was successful!"
             text = ''

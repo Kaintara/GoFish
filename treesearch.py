@@ -124,6 +124,7 @@ class GameEnvironment:
         for card in asks:
             for option in available:
                     moves.append((f'player{option+1}',card,'ask')) 
+        random.shuffle(moves)
         return moves
     
     def remove_set(game, rank, hand):
@@ -173,14 +174,22 @@ class GameEnvironment:
         return (not state["deck"]) and all(len(hand) == 0 for hand in state["hands"].values())
     
     def get_reward(game,state,index):
-        for hand in state["hands"][f'player{index+1}']:
+        reward = 0
+        for player,hand in state["hands"]:
             ranks = [card[:-1] for card in hand]
             counts = Counter(ranks)
             near_sets = [rank for rank, count in counts.items() if count == 3]
-            if near_sets:
-                return len(state["sets"][f'player{index+1}']) + int(len(near_sets)*0.5)
+            if hand == state["hands"][f'player{index+1}']:
+                if near_sets:
+                    reward += len(state["sets"][f'player{index+1}']) + int(len(near_sets)*0.5)
+                else:
+                    reward += len(state["sets"][f'player{index+1}'])
             else:
-                return len(state["sets"][f'player{index+1}'])
+                if near_sets:
+                    reward -= (len(state["sets"][player]) + int(len(near_sets)*0.5)) * 0.25
+                else:
+                    reward -= len(state["sets"][player]) * 0.25
+        return reward
 
 
 
