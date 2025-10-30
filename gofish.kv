@@ -246,6 +246,104 @@
 <Stats>:
     md_bg_color: self.theme_cls.surfaceColor
     MDFloatLayout:
+        MDLabel:
+            text: "Game Stats!"
+            adaptive_height: True
+            pos_hint: {"center_x":0.5, "top":0.9}
+            font_style: "cataway"
+            role: "large"
+            halign: "center"
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            adaptive_height: True
+            size_hint_x: 0.8
+            size_hint_y: 0.1
+            spacing: dp(5)
+            pos_hint: {"center_x":0.5, "top":0.6}
+            MDIconButton:
+                style: "tonal"
+                icon: "chevron-double-left"
+                pos_hint: {"center_x":0.2}
+                on_release: app.left()
+            Carousel:
+                id: loop
+                direction: "right"
+                loop: "true"
+                pos_hint: {"center_x":0.5, "center_y":0.5, "right":0.5}
+                MDLabel:
+                    text: "All-Time Stats"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: "center"
+                    valign: "center"
+                MDLabel:
+                    text: "Beginner"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: "center"
+                    valign: "center"
+                MDLabel:
+                    text: "Easy"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: "center"
+                    valign: "center"
+                MDLabel:
+                    text: "Medium"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: "center"
+                    valign: "center"
+                MDLabel:
+                    text: "Hard"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: "center"
+                    valign: "center"
+                MDLabel:
+                    text: "Expert"
+                    font_style: "cataway"
+                    role: "small"
+                    halign: "center"
+                    valign: "center"
+            MDIconButton:
+                style: "tonal"
+                icon: "chevron-double-right"
+                pos_hint: {"center_x":0.8}
+                on_release: app.right()
+        MDBoxLayout:
+            orientation: "horizontal"
+            adaptive_height: True
+            adaptive_width: True
+            spacing: dp(20)
+            pos_hint: {"center_x":0.5, "top": 0.3}
+            MDIconButton: #Change Light/Dark Button
+                name: "light"
+                style: "tonal"
+                icon: "white-balance-sunny"
+                on_release: 
+                    app.switch_icon(self)
+                    app.theme_cls.switch_theme()
+            MDIconButton: #Change Theme Button
+                style: "tonal"
+                icon: "palette"
+                on_release: 
+                    app.sm_stacky("Settings")
+                    root.manager.current = "Themes"
+            MDIconButton: #Go to how to play
+                style: "tonal"
+                icon: "help"
+                on_release: 
+                    app.sm_stacky("Settings")
+                    root.manager.current = "Rules"
+            MDIconButton: #Go to Game stats
+                name: "light"
+                style: "tonal"
+                icon: "chart-donut"
+                on_release: 
+                    app.sm_stacky("Settings")
+                    root.manager.current = "Stats"
         MDIconButton: #Back button
             pos_hint: {"left":0.98, "top": 0.98}
             size: dp(48), dp(48)

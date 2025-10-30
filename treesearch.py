@@ -59,11 +59,12 @@ class GameEnvironment:
 
         for move in auto_moves:
             if move in history:
-                continue
-            else:
-                return move
-        return None
-
+                auto_moves.remove(move)
+        try:
+            return random.choice(auto_moves)
+        except:
+            return None
+        
     def determinization(game,state): #Function will calculate what cards players have and then assume the rest for the first part of the ISMCTS
         copied = copy.deepcopy(state)
         Ai = copied["current_player"][1]

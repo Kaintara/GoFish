@@ -401,7 +401,17 @@ class Player_Icon(MDCard): #How to ask for cards.
                 theme_font_size = "Custom",
                 font_size = dp(20),
                 markup = True,
-            )).open()
+            ),
+            MDDialogButtonContainer(
+                MDButton(
+                    MDButtonText(text="Sort Cards", font_style = "cataway", role = "small"),
+                    MDButtonIcon(icon="cards"),
+                    style = "tonal",
+                    pos_hint = {"center_x":0.5},
+                    on_release = lambda x:app.sort_cards()
+                )
+            )
+            ).open()
             return super().on_touch_down(touch)
     
     def highlight(self):
@@ -885,6 +895,12 @@ class GoFishApp(MDApp):
                 self.player_turn = True
             return None
 
+    def sort_cards(self):
+        g = self.game_instance
+        g.sort_cards()
+        g.Update_GameState()
+        self.update_widgets()
+
     def update_widgets(self):
         dis = self.get_widget("deck","InGame")
         hand = self.get_widget("hand","InGame")
@@ -899,7 +915,10 @@ class GoFishApp(MDApp):
         Clock.schedule_once(self.next_turn, 0.5)
 
     def go_to_menu(self, *args):
-        self.game_over_dialog.dismiss()
+        if hasattr(self, "game_over_dialog") and self.game_over_dialog:
+            self.game_over_dialog.dismiss()
+        if hasattr(self, "multi_dialog") and self.multi_dialog:
+            self.multi_dialog.dismiss()
         self.root.current = "Menu"
 
     def game_over(self):
