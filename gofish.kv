@@ -244,7 +244,7 @@
                 app.theme_cls.switch_theme()
 
 <Stats>:
-    md_bg_color: self.theme_cls.surfaceColor
+    md_bg_color: self.theme_cls.backgroundColor
     MDFloatLayout:
         MDLabel:
             text: "Game Stats!"
@@ -260,12 +260,12 @@
             size_hint_x: 0.8
             size_hint_y: 0.1
             spacing: dp(5)
-            pos_hint: {"center_x":0.5, "top":0.6}
+            pos_hint: {"center_x":0.5, "top":0.7}
             MDIconButton:
                 style: "tonal"
                 icon: "chevron-double-left"
                 pos_hint: {"center_x":0.2}
-                on_release: app.left()
+                on_release: app.left_stats()
             Carousel:
                 id: loop
                 direction: "right"
@@ -311,39 +311,20 @@
                 style: "tonal"
                 icon: "chevron-double-right"
                 pos_hint: {"center_x":0.8}
-                on_release: app.right()
-        MDBoxLayout:
-            orientation: "horizontal"
-            adaptive_height: True
-            adaptive_width: True
-            spacing: dp(20)
-            pos_hint: {"center_x":0.5, "top": 0.3}
-            MDIconButton: #Change Light/Dark Button
-                name: "light"
-                style: "tonal"
-                icon: "white-balance-sunny"
-                on_release: 
-                    app.switch_icon(self)
-                    app.theme_cls.switch_theme()
-            MDIconButton: #Change Theme Button
-                style: "tonal"
-                icon: "palette"
-                on_release: 
-                    app.sm_stacky("Settings")
-                    root.manager.current = "Themes"
-            MDIconButton: #Go to how to play
-                style: "tonal"
-                icon: "help"
-                on_release: 
-                    app.sm_stacky("Settings")
-                    root.manager.current = "Rules"
-            MDIconButton: #Go to Game stats
-                name: "light"
-                style: "tonal"
-                icon: "chart-donut"
-                on_release: 
-                    app.sm_stacky("Settings")
-                    root.manager.current = "Stats"
+                on_release: app.right_stats()
+        MDScrollView: #Themes
+            do_scroll_x: False
+            do_scroll_y: True
+            pos_hint: {"center_x":0.5, "top": 0.55}
+            size_hint: 1, 0.55
+            MDBoxLayout:
+                md_bg_color: app.theme_cls.surfaceColor
+                id: stats
+                orientation: "vertical"
+                adaptive_height: True
+                adaptive_width: True
+                spacing: dp(20)
+                pos_hint: {"center_x":0.5, "top": 0.5}
         MDIconButton: #Back button
             pos_hint: {"left":0.98, "top": 0.98}
             size: dp(48), dp(48)
@@ -381,7 +362,7 @@
                 style: "tonal"
                 icon: "chevron-double-left"
                 pos_hint: {"center_x":0.2}
-                on_release: app.left()
+                on_release: app.left_set()
             Carousel:
                 id: loop
                 direction: "right"
@@ -421,7 +402,7 @@
                 style: "tonal"
                 icon: "chevron-double-right"
                 pos_hint: {"center_x":0.8}
-                on_release: app.right()
+                on_release: app.right_set()
         MDBoxLayout:
             orientation: "horizontal"
             adaptive_height: True

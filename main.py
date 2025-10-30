@@ -1,9 +1,9 @@
 #Imports
 
 from math import sin, cos, radians
-import time
 import random
 from Game import Game
+import json
 
 #Kivy
 from kivy.core.window import Window
@@ -706,6 +706,7 @@ class GoFishApp(MDApp):
         self.theme_cls.primary_palette = colour
 
     def on_start(self): #When the app starts this is run, preloads the theme section
+        self.resume_game()
         grid = self.get_widget("grid","Themes")
         for colour in self.colours:
             int = random.randint(0,3)
@@ -745,13 +746,48 @@ class GoFishApp(MDApp):
             rank = card[1]
         return f"{rank}{suit}"
     
-    def left(self): #Goes left in the carousel
+    def left_set(self): #Goes left in the carousel
         Carou = self.get_widget("loop","Settings")
         Carou.load_previous()
 
-    def right(self): #Goes right in the carousel
+    def right_set(self): #Goes right in the carousel
         Carou = self.get_widget("loop","Settings")
         Carou.load_next()
+
+    def update_carousel(self):
+        layout = self.get_widget("stats","Stats")
+        layout.clear_widgets()
+        Carou = self.get_widget("loop","Stats")
+        setting = Carou.current_slide.text
+        if setting == "All-Time Stats": #Expert goes here
+            pass
+        elif setting == "Beginner": #All-time
+            pass
+        elif setting == "Easy": #Beginner
+            pass
+        elif setting == "Medium": #Easy
+            Score = MDLabel(
+            text = "30/10/25 -  5 sets",
+            font_style= "cataway",
+            role= "small",
+            halign= 'center',
+            pos_hint= {"center_x":0.5,"center_y":0.5},
+            theme_font_size= "Custom",
+            font_size = dp(30),
+            adaptive_size= True)
+            layout.add_widget(Score)
+        elif setting == "Hard": #Medium
+            pass
+        elif setting == "Expert": #Hard
+            pass
+
+    def right_stats(self):
+        Carou = self.get_widget("loop","Stats")
+        Carou.load_next()
+    
+    def left_stats(self):
+        Carou = self.get_widget("loop","Stats")
+        Carou.load_previous()
 
     def assign_player_num(self): #Gives each player a player name which is used frequently in the Game.py code
         g = self.game_instance
@@ -1013,7 +1049,6 @@ class GoFishApp(MDApp):
         print(g.state)
         self.game_loop_solo()
         
-
     def start(self): #Starts the game
         if len(self.players) == 1:
             self.game_instance = Game(4,3)
@@ -1048,8 +1083,15 @@ class GoFishApp(MDApp):
         entry_box.add_widget(removebtn)
         player.add_widget(entry_box, index=0)
         self.players.append(name)
-        
-        
+
+    def save(self):
+        save_data = {
+
+        }
+    
+    def load(self):
+        pass
+
 #Running App
 if __name__ == "__main__":
     GoFishApp().run()
